@@ -21,8 +21,8 @@ import MyLbdDistribution from "./helpers/LbdDistribution";
 
 // }
 
-export namespace Consolid{
-    export const LBDService = MyLbdService;
+export namespace LBDserver {
+    export const LbdService = MyLbdService;
     export const LbdProject = MyLbdProject;
     export const LbdDataset = MyLbdDataset;
     export const LbdDistribution = MyLbdDistribution;

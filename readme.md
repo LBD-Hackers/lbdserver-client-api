@@ -27,35 +27,17 @@ This is needed for running the tests.
 }
 ```
 
-## Run the demo
-Another option for development is to run the demo app and test functionality there. This small web app is based on Angular.
+## Install
+You can install this library with `github:ConSolidProject/lbdserver-client-api`.
 
-When running the demo you do not need to do the *get session token* step. Simply login using the button.
-* `cd demo`
-* `npm install`
-* `ng serve`
-* http://localhost:4200
+## Usage
+The library exposes four Classes: 
+* LbdService: basic interaction with the Pod (e.g. validate and create LBD project repository)
+* LbdProject: basic interaction with LBDserver projects
+* LbdDataset: basic interaction with datasets of LBDserver projects
+* LbdDistribution: basic interaction with distributions of datasets of LBDserver projects.
 
 ## Build and deploy
 Building the library is handled with the `npm run build` command. This generates the `lib` folder and its content. We build ESM and UMD bundles that can be directly included in an HTML document. Furthermore, we build a CommonJS and an ESM version.
 
 Bundles are build using the configuration in `rollup.config.js`.
-
-## Use
-
-### Use with Angular
-* `npm i --save consolid-api`
-* `npm i --save-dev @types/node`
-* Add to tsconfig.json:
-  ```json
-  "angularCompilerOptions": {
-    ...
-    "types" : ["node"]
-  }
-  ```
-* Add to package.json
-  ```json
-  "browser": {
-    "buffer": false
-  }
-  ```
