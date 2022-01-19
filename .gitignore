@@ -1,0 +1,8 @@
+/node_modules
+/dist
+/build
+.history
+triples.json
+*.nq
+demo/node_modules
+demo/.angular
