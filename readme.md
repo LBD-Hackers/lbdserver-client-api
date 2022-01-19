@@ -1,4 +1,4 @@
-# Consolid
+# LBDserver
 
 ## Testing
 In order to run tests (`npm run test`) which is also the preferred way of further developing the library (write test and make sure that it passes) you need to first have a local solid community server running, and you need to get credentials that you copy-paste to the `credentials.js` file.
