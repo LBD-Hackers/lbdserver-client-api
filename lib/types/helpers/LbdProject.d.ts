@@ -1,5 +1,6 @@
 import AccessService from "./access-service";
 import DataService from "./data-service";
+import LbdConcept from './LbdConcept';
 import { ActorInitSparql } from "@comunica/actor-init-sparql";
 import LbdDataset from "./LbdDataset";
 import { AccessRights } from "./BaseDefinitions";
@@ -36,18 +37,10 @@ export default class LbdProject {
     addDataset(options?: object, makePublic?: boolean, id?: string): Promise<LbdDataset>;
     deleteDataset(datasetUrl: string): Promise<void>;
     deleteDatasetById(datasetId: string): Promise<void>;
-    addDistribution(datasetURL: string, distribution: File[]): Promise<void>;
-    deleteDistribution(datasetURL: string, distribution: File[]): Promise<void>;
-    updateDistribution(datasetURL: string, distribution: File[]): Promise<void>;
-    queryDistribution(datasetURL: string, distribution: File[]): Promise<void>;
-    getReferences(): Promise<void>;
-    deleteReference(): Promise<void>;
-    addReference(): Promise<void>;
-    addConcept(): Promise<void>;
+    addConcept(): Promise<LbdConcept>;
+    deleteConcept(url: string): Promise<void>;
     addAlias(): Promise<void>;
     getConcept(): Promise<void>;
-    addService(): Promise<void>;
-    deleteService(): Promise<void>;
-    getAllServices(): Promise<void>;
+    queryProject(): Promise<void>;
 }
 //# sourceMappingURL=LbdProject.d.ts.map

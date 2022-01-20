@@ -1,4 +1,3 @@
-import { ICDDService as MyICDDService } from "./helpers/icdd-service";
 import MyLbdService from "./helpers/LbdService"
 import MyLbdProject from "./helpers/LbdProject"
 import MyLbdDataset from "./helpers/LbdDataset";

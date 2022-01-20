@@ -1,5 +1,6 @@
 import AccessService from "./access-service";
 import DataService from "./data-service";
+import LbdConcept from './LbdConcept'
 import { newEngine, IQueryResultBindings, ActorInitSparql } from "@comunica/actor-init-sparql";
 import LbdDataset from "./LbdDataset"
 import LBD from "./vocab/lbd";
@@ -166,30 +167,27 @@ export default class LbdProject {
   }
 
   /////////////////////////////////////////////////////////
-  //////////////////// DISTRIBUTIONS///////////////////////
-  /////////////////////////////////////////////////////////
-  public async addDistribution(datasetURL: string, distribution: File[]) {}
-
-  public async deleteDistribution(datasetURL: string, distribution: File[]) {}
-
-  public async updateDistribution(datasetURL: string, distribution: File[]) {}
-
-  public async queryDistribution(datasetURL: string, distribution: File[]) {}
-
-  /////////////////////////////////////////////////////////
   ////////////////////// REFERENCES////////////////////////
   /////////////////////////////////////////////////////////
 
   // get all references related to a specific abstract Concept
-  public async getReferences() {}
+  public async addConcept(): Promise<LbdConcept> {
+    const subject = extract(this.data, this.localProject)
+    const referenceRegistry = subject[LBD.hasReferenceRegistry][0]["@id"]
+    const ref = new LbdConcept(this.fetch, referenceRegistry)
+    await ref.create()
+    return ref
+  }
 
-  public async deleteReference() {}
+  public async deleteConcept(url: string) {
+    const parts = url.split("/")
+    const id = parts.pop()
+    const referenceRegistry = parts.join("/")
+    console.log('id, referenceRegistry', id, referenceRegistry);
+    const ref = new LbdConcept(this.fetch, referenceRegistry, id)
+    await ref.delete()
+  }
 
-  // register a reference for an existing abstract concept
-  public async addReference() {}
-
-  // register an abstract concept
-  public async addConcept() {}
 
   // register an alias for an existing concept
   public async addAlias() {}
@@ -198,16 +196,16 @@ export default class LbdProject {
   public async getConcept() {}
 
   /////////////////////////////////////////////////////////
-  /////////////////////// SERVICES ////////////////////////
+  /////////////////////// QUERY ////////////////////////
   /////////////////////////////////////////////////////////
+  public async queryProject() {
+    // if there is a satellite
 
-  // register a service in the Service Registry
-  public async addService() {}
+    // if there is no satellite
+  }
 
-  // delete a service from the Service Registry
-  public async deleteService() {}
 
-  // get all services from a Service Registry
-  public async getAllServices() {}
+  
+
 }
 

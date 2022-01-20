@@ -8,7 +8,7 @@ export default class DataService {
     /**
      * FILES
      */
-    writeFileToPod(file: File | Buffer, targetFileURL: string, makePublic: boolean, contentType: string): Promise<(File | Buffer) & import("@inrupt/solid-client").WithResourceInfo>;
+    writeFileToPod(file: File | Buffer, targetFileURL: string, makePublic: boolean, contentType: string): Promise<void>;
     getFile(fileURL: string): Promise<Blob & import("@inrupt/solid-client").WithResourceInfo & {
         internal_resourceInfo: {
             aclUrl?: string;

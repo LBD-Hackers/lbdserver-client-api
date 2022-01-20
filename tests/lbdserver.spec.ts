@@ -1,11 +1,10 @@
-import { Consolid } from "../src";
+import { LBDserver } from "../src";
 import { Session } from "@inrupt/solid-client-authn-node";
 import * as path from "path";
-import { ICDDService } from "../src/helpers/icdd-service";
 import { createReadStream, readFileSync } from "fs";
 import * as FileAPI from "file-api";
 import { loginCredentials } from "../credentials";
-import LBDService from "../src/helpers/LbdService";
+import LbdService from "../src/helpers/LbdService";
 import LbdProject from "../src/helpers/LbdProject";
 import { AccessRights } from "../src/helpers/BaseDefinitions";
 import {
@@ -19,10 +18,17 @@ import LbdDataset from "../src/helpers/LbdDataset";
 import LbdDistribution from "../src/helpers/LbdDistribution";
 import fs from "fs"
 import mime from "mime-types"
+import LbdConcept from "../src/helpers/LbdConcept";
+import LBD from "../src/helpers/vocab/lbd";
+import { IQueryResultBindings, IQueryResultBoolean, newEngine } from "@comunica/actor-init-sparql";
+import { extract } from "jsonld-remote";
 
-const testFilePath = path.join(__dirname, "./artifacts/model.gltf");
-const mimetype = mime.lookup(testFilePath)
-const testBuffer = fs.readFileSync(testFilePath)
+
+const filePath1 = path.join(__dirname, "./artifacts/architectuur.gltf");
+const fileUpload1 = fs.readFileSync(filePath1)
+
+const filePath2 = path.join(__dirname, "./artifacts/architectuur.ttl");
+const fileUpload2 = fs.readFileSync(filePath2)
 // const testFile = new File(["test"], "myFile")
 
 // const testFile = new FileAPI.File({
@@ -38,15 +44,22 @@ const testBuffer = fs.readFileSync(testFilePath)
 // See readme for how to retrieve this!
 
 let session: Session;
-let lbd: LBDService;
+let lbd: LbdService;
 let me: string;
 let projectId: string = v4()
 let theOtherOne: string
 let project: LbdProject;
-let dataset: LbdDataset;
-let distribution: LbdDistribution;
+let dataset1: LbdDataset;
+let dataset2: LbdDataset;
+let distribution1: LbdDistribution;
+let distribution2: LbdDistribution;
+let concept: LbdConcept;
+let reference: string;
+
+let engine = newEngine()
 
 beforeAll(async () => {
+  jest.setTimeout(600000)
   theOtherOne = "http://localhost:5000/arch/profile/card#me"
   // projectId = "8bb70cea-f694-4ce1-ba5b-f92531574ee7"
   session = new Session();
@@ -55,7 +68,7 @@ beforeAll(async () => {
     console.error(
       "Please get login credentials with npx @inrupt/generate-oidc-token before running tests!"
     );
-  lbd = new Consolid.LBDService(session.fetch);
+  lbd = new LbdService(session.fetch);
   me = session.info.webId;
 });
 
@@ -150,57 +163,220 @@ describe("Auth", () => {
   ///////////// DATASETS & DISTRIBUTIONS///////////////////
   /////////////////////////////////////////////////////////
   test("can add dataset to partial project", async () => {
-    dataset = await project.addDataset({[RDFS.label]: "theLabel"}, true)
-    expect(dataset.data).not.toBe(undefined);
+    dataset1 = await project.addDataset({[RDFS.label]: "theLabel"}, true)
+    dataset2 = await project.addDataset({[RDFS.label]: "theLabel"}, true)
+    expect(dataset1.data).not.toBe(undefined);
   })
   
   test("can add distribution to dataset", async () => {
-    distribution = await dataset.addDistribution(testBuffer)   
-    expect(distribution.data).not.toBe(undefined);
+    distribution1 = await dataset1.addDistribution(fileUpload1, "model/gltf+json")   
+    distribution2 = await dataset2.addDistribution(fileUpload2, "text/turtle")   
+    expect(distribution1.data).not.toBe(undefined);
+  })
+
+  /////////////////////////////////////////////////////////
+  ////////////////////// REFERENCES ///////////////////////
+  /////////////////////////////////////////////////////////
+  test("can create concept", async () => {
+    concept = await project.addConcept()
+
+    const q = `ASK {<${concept.url}> a <${LBD.Concept}> .}`
+    const subject = extract(project.data, project.localProject)
+    const referenceRegistry = subject[LBD.hasReferenceRegistry][0]["@id"]
+    const res = await engine.query(q, {sources: [referenceRegistry], fetch: session.fetch}).then((r:any) => r.booleanResult)
+    expect(res).toBe(true)
+  })
+
+  // test("can create reference for concept", async () => {
+  //   reference = await concept.addReference("hello", dataset1.url)
+
+  //   // const q = `ASK {<${concept.url}> <${LBD.hasReference}> <${reference}> .}`
+  //   // console.log('q', q);
+  //   // const subject = extract(project.data, project.localProject)
+  //   // const referenceRegistry = subject[LBD.hasReferenceRegistry][0]["@id"]
+  //   // console.log('referenceRegistry', referenceRegistry);
+  //   // const res = await engine.query(q, {sources: [referenceRegistry], fetch: session.fetch}).then((r:any) => r.booleanResult)
+
+  //   // expect(res).toBe(true)
+  // })
+
+  test("can align ttl and gltf", async () => {
+    await createReferences(project, distribution2.url, distribution1.url, session)
+
+    // const q = `ASK {<${concept.url}> <${LBD.hasReference}> <${reference}> .}`
+    // console.log('q', q);
+    // const subject = extract(project.data, project.localProject)
+    // const referenceRegistry = subject[LBD.hasReferenceRegistry][0]["@id"]
+    // console.log('referenceRegistry', referenceRegistry);
+    // const res = await engine.query(q, {sources: [referenceRegistry], fetch: session.fetch}).then((r:any) => r.booleanResult)
+
+    // expect(res).toBe(true)
   })
 
   /////////////////////////////////////////////////////////
   /////////////////////// CLEANUP /////////////////////////
   /////////////////////////////////////////////////////////
-  test("can delete distribution", async () => {
-    const durl = distribution.url
-    const statusBefore = await session.fetch(durl).then(res => res.status)
 
-    await distribution.delete()
-    const statusAfter = await session.fetch(durl).then(res => res.status)
-    expect(statusBefore).toBe(200)
-    expect(statusAfter).toBe(404)
- })
+  // test("can delete reference for concept", async () => {
+  //   await concept.deleteReference(reference)
 
-  test('can delete dataset', async() => {
-    const durl = dataset.url
-    const statusBefore = await session.fetch(durl).then(res => res.status)
+  //   const q = `ASK {<${concept.url}> <${LBD.hasReference}> <${reference}> .}`
+  //   const subject = extract(project.data, project.localProject)
+  //   const referenceRegistry = subject[LBD.hasReferenceRegistry][0]["@id"]
+  //   const res = await engine.query(q, {sources: [referenceRegistry], fetch: session.fetch}).then((r:any) => r.booleanResult)
+  //   expect(res).toBe(false)
+  // })
 
-    await dataset.delete()
-    const statusAfter = await session.fetch(durl).then(res => res.status)
-    expect(statusBefore).toBe(200)
-    expect(statusAfter).toBe(404)
-  })
+  // test("can delete concept", async () => {
+  //   await concept.delete()
 
-  test("can delete complete project", async () => {
-    const projectUrl = project.accessPoint
-    const statusBefore = await session.fetch(projectUrl).then(res => res.status)
+  //   const q = `ASK {<${concept.url}> a <${LBD.Concept}> .}`
+  //   const subject = extract(project.data, project.localProject)
+  //   const referenceRegistry = subject[LBD.hasReferenceRegistry][0]["@id"]
+  //   const res = await engine.query(q, {sources: [referenceRegistry], fetch: session.fetch}).then((r:any) => r.booleanResult)
+  //   expect(res).toBe(false)
 
-    await project.delete()
-    const statusAfter = await session.fetch(projectUrl).then(res => res.status)
-    expect(statusBefore).toBe(200)
-    expect(statusAfter).toBe(404)
-  })
 
-  test("can delete LBD project Repository from Pod", async () => {
-    const url = me.replace("/profile/card#me", "/lbd/");
-    const statusBefore = await session.fetch(url).then(res => res.status)
+  // })
 
-    const lbdRes = await lbd.removeProjectRegistry(me, url);
-    const statusAfter = await session.fetch(url).then(res => res.status)
-    expect(statusBefore).toBe(200)
-    expect(statusAfter).toBe(404)
-  });
+//   test("can delete distribution", async () => {
+//     const durl = distribution.url
+//     const statusBefore = await session.fetch(durl).then(res => res.status)
+
+//     await distribution.delete()
+//     const statusAfter = await session.fetch(durl).then(res => res.status)
+//     expect(statusBefore).toBe(200)
+//     expect(statusAfter).toBe(404)
+//  })
+
+//   test('can delete dataset', async() => {
+//     const durl = dataset1.url
+//     const statusBefore = await session.fetch(durl).then(res => res.status)
+
+//     await dataset1.delete()
+//     const statusAfter = await session.fetch(durl).then(res => res.status)
+//     expect(statusBefore).toBe(200)
+//     expect(statusAfter).toBe(404)
+//   })
+
+//   test("can delete complete project", async () => {
+//     const projectUrl = project.accessPoint
+//     const statusBefore = await session.fetch(projectUrl).then(res => res.status)
+
+//     await project.delete()
+//     const statusAfter = await session.fetch(projectUrl).then(res => res.status)
+//     expect(statusBefore).toBe(200)
+//     expect(statusAfter).toBe(404)
+//   })
+
+//   test("can delete LBD project Repository from Pod", async () => {
+//     const url = me.replace("/profile/card#me", "/lbd/");
+//     const statusBefore = await session.fetch(url).then(res => res.status)
+
+//     const lbdRes = await lbd.removeProjectRegistry(me, url);
+//     const statusAfter = await session.fetch(url).then(res => res.status)
+//     expect(statusBefore).toBe(200)
+//     expect(statusAfter).toBe(404)
+//   });
 
 });
 
+async function createReferences(project: LbdProject, lbdLocation, gltfLocation, session) {
+  const myEngine = newEngine();
+  const gltfData = await session.fetch(gltfLocation).then(t => t.json())
+  const lbdProps = await determineLBDpropsLevel(lbdLocation, session);
+  for (const element of gltfData.nodes) {
+    if (element.name && element.name.length > 10) {
+      let q;
+      if (lbdProps === 1) {
+        q = `
+          prefix ldp: <http://www.w3.org/ns/ldp#>
+          prefix dcat: <http://www.w3.org/ns/dcat#>
+          prefix schema: <http://schema.org/> 
+          prefix props: <https://w3id.org/props#>
+    
+          select ?element 
+          where 
+          { ?element props:globalIdIfcRoot_attribute_simple "${element.name}" .
+          } LIMIT 1`;
+      } else {
+        q = `
+        prefix ldp: <http://www.w3.org/ns/ldp#>
+        prefix dcat: <http://www.w3.org/ns/dcat#>
+        prefix schema: <http://schema.org/> 
+        prefix props: <https://w3id.org/props#>
+      
+        select ?element ?thing
+        where 
+        { ?element props:globalIdIfcRoot ?thing . ?thing schema:value "${element.name}" .
+        } LIMIT 1`;
+      }
+    
+        const result: any = await myEngine.query(q, {
+          sources: [lbdLocation],
+          fetch: session.fetch,
+        })
+        const bindings = await result.bindings()
+
+        if (bindings.length > 0) {
+          const el = bindings[0].get('?element').value;
+          const gltfDataset = gltfLocation.split('/').slice(0, -1).join('/') + '/'
+          const lbdDataset = lbdLocation.split('/').slice(0, -1).join('/') + '/'
+
+          const concept = await project.addConcept()
+          await concept.addReference(element.name, gltfDataset)
+          await concept.addReference(el, lbdDataset)
+        }
+    }
+  } 
+
+
+
+}
+
+async function determineLBDpropsLevel(source, session) {
+  const myEngine = newEngine();
+
+  let q, bindings, results;
+  q = `
+  prefix ldp: <http://www.w3.org/ns/ldp#>
+  prefix dcat: <http://www.w3.org/ns/dcat#>
+  prefix schema: <http://schema.org/> 
+  prefix props: <https://w3id.org/props#>
+
+  select ?element ?thing
+  where 
+  { ?element props:globalIdIfcRoot_attribute_simple ?thing .
+  } LIMIT 1`;
+
+  bindings = await myEngine.query(q, {
+    sources: [source],
+    fetch: session.fetch,
+  }).then((r: any) => r.bindings())
+
+  if (bindings.length == 0) {
+    q = `
+    prefix ldp: <http://www.w3.org/ns/ldp#>
+    prefix dcat: <http://www.w3.org/ns/dcat#>
+    prefix schema: <http://schema.org/> 
+    prefix props: <https://w3id.org/props#>
+  
+    select ?element ?thing
+    where 
+    { ?element props:globalIdIfcRoot ?thing . ?thing schema:value ?id .
+    } LIMIT 1`;
+
+    const bindings = await myEngine.query(q, {
+      sources: [source],
+      fetch: session.fetch,
+    }).then((r: any) => r.bindings())
+
+    if (bindings.length > 0) {
+      return 2;
+    } else {
+      throw Error("could not determine props level");
+    }
+  } else {
+    return 1;
+  }
+}

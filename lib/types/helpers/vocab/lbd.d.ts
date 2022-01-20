@@ -7,6 +7,14 @@ declare const LBD: {
     };
     NS: typeof _NS;
     Aggregator: string;
+    Concept: string;
+    StringBasedIdentifier: string;
+    URIBasedIdentifier: string;
+    hasReference: string;
+    inDataset: string;
+    inDistribution: string;
+    hasIdentifier: string;
+    identifier: string;
     aggregates: string;
     hasProjectRegistry: string;
     hasDatasetRegistry: string;

@@ -34,20 +34,32 @@ export default class DataService{
     // If the targetFileURL does not exist, create the file at the location.
     public async writeFileToPod(file: File|Buffer, targetFileURL: string, makePublic: boolean = false, contentType: string) {
 
-        const savedFile = await overwriteFile(
-          targetFileURL,                            // URL for the file.
-          file,                                     // File
-          { contentType, fetch: this.fetch }        // mimetype if known, fetch from the authenticated session
-        );
-        this.verbose && console.log(`File saved at ${getSourceUrl(savedFile)}`);
+        var requestOptions = {
+            method: "PUT",
+            headers: {
+              "Content-Type": contentType,
+            },
+            body: file,
+            redirect: "follow",
+          };
+          await this.fetch(targetFileURL, requestOptions);
+
+
+        // const savedFile = await overwriteFile(
+        //   targetFileURL,                            // URL for the file.
+        //   file,                                     // File
+        //   { contentType, fetch: this.fetch }        // mimetype if known, fetch from the authenticated session
+        // );
+        // this.verbose && console.log(`File saved at ${getSourceUrl(savedFile)}`);
 
         if(makePublic){
             await this.accessService.makeFilePublic(targetFileURL);
         }
 
-        return savedFile;
+        // return savedFile;
 
     }
+
 
     public async getFile(fileURL: string) {
         this.verbose && console.log(`Getting file ${fileURL}...`);

@@ -12,6 +12,16 @@ const LBD = {
   NS: _NS,
 
   Aggregator: _NS("Aggregator"),
+  Concept: _NS("Concept"),
+  StringBasedIdentifier: _NS("StringBasedIdentifier"),
+  URIBasedIdentifier: _NS("URIBasedIdentifier"),
+
+  hasReference: _NS("hasReference"),
+  inDataset: _NS("inDataset"),
+  inDistribution: _NS("inDistribution"),
+  hasIdentifier: _NS("hasIdentifier"),
+  identifier: _NS("identifier"),
+
 
   aggregates: _NS("aggregates"),
   hasProjectRegistry: _NS("hasProjectRegistry"),

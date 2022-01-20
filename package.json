@@ -13,7 +13,7 @@
     "build:esm": "cross-env BABEL_ENV=esmUnbundled babel src --extensions '.ts' --out-dir 'lib/esm' --source-maps",
     "build:cjs": "cross-env BABEL_ENV=cjs babel src --extensions '.ts' --out-dir 'lib/cjs' --source-maps",
     "copy-assets": "cp node_modules/web-ifc/web-ifc.wasm lib && cp node_modules/web-ifc/web-ifc-mt.wasm lib",
-    "test": "jest ./tests --detectOpenHandles --forceExit"
+    "test": "jest ./tests"
   },
   "keywords": [],
   "author": "Jeroen Werbrouck<jeroen.werbrouck@ugent.be>",
@@ -63,6 +63,7 @@
     "@inrupt/solid-client-authn-node": "^1.11.3",
     "@inrupt/vocab-common-rdf": "^1.0.3",
     "@solid/query-ldflex": "^2.11.3",
+    "@types/lodash": "^4.14.178",
     "jsonld-remote": "github:LBD-Hackers/jsonLD-remote",
     "mime-types": "^2.1.34",
     "n3": "^1.12.2",
