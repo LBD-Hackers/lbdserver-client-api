@@ -16,6 +16,7 @@ export default class LbdDistribution {
   public dataService: DataService;
   public lbdService: LBDService;
   public datasetUrl: string;
+  public contentType: string;
 
   // include queryEngine to allow caching of querydata etc.
   public queryEngine: ActorInitSparql;
@@ -30,6 +31,7 @@ export default class LbdDistribution {
     this.fetch = fetch;
     this.url = url
     this.datasetUrl = ds
+  
     this.accessService = new AccessService(fetch);
     this.dataService = new DataService(fetch);
     this.lbdService = new LBDService(fetch);
@@ -47,7 +49,20 @@ export default class LbdDistribution {
 
   public async init(options: object = {}) {
       this.data = await this.fetch(this.url, options)
+      // this.contentType = await this.getContentType()
   }
+
+  public async getContentType() {
+    const q0 = `SELECT ?ct where {?id <${DCTERMS.format}> ?ct}`
+    const ct = await this.queryEngine.query(q0, {sources: [this.datasetUrl], fetch: this.fetch}).then((res: any) => res.bindings())
+    if (ct.length > 0) {
+      const value = ct[0].get('?ct').value
+      this.contentType = value
+      return value
+    } else {
+      throw new Error(`"Could not find contentType in dataset ${this.datasetUrl}`)
+    }
+  } 
 
   public async updateMetadata(query) {
     await this.dataService.sparqlUpdate(this.datasetUrl, query)

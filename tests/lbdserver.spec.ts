@@ -174,6 +174,13 @@ describe("Auth", () => {
     expect(distribution1.data).not.toBe(undefined);
   })
 
+  test("can get content type of distribution", async () => {
+    const ct1 = await distribution1.getContentType()
+    console.log('ct1', ct1);
+    expect(ct1).toBe("https://www.iana.org/assignments/media-types/model/gltf+json")
+  })
+
+
   /////////////////////////////////////////////////////////
   ////////////////////// REFERENCES ///////////////////////
   /////////////////////////////////////////////////////////
@@ -181,12 +188,13 @@ describe("Auth", () => {
     concept = await project.addConcept()
 
     const q = `ASK {<${concept.url}> a <${LBD.Concept}> .}`
-    console.log('q', q);
     const subject = extract(project.data, project.localProject)
     const referenceRegistry = subject[LBD.hasReferenceRegistry][0]["@id"] + "data"
     const res = await engine.query(q, {sources: [referenceRegistry], fetch: session.fetch}).then((r:any) => r.booleanResult)
     expect(res).toBe(true)
   })
+
+
 
   // test("can create reference for concept", async () => {
   //   reference = await concept.addReference("hello", dataset1.url)

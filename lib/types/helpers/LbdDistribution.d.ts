@@ -9,12 +9,14 @@ export default class LbdDistribution {
     dataService: DataService;
     lbdService: LBDService;
     datasetUrl: string;
+    contentType: string;
     queryEngine: ActorInitSparql;
     url: string;
     data: any;
     constructor(fetch: any, url: any);
     checkExistence(): Promise<boolean>;
     init(options?: object): Promise<void>;
+    getContentType(): Promise<any>;
     updateMetadata(query: any): Promise<void>;
     addAccessUrl(accessUrl: any): Promise<void>;
     create(file: File | Buffer, options?: object, mimetype?: string, makePublic?: boolean): Promise<void>;
