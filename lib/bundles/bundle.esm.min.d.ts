@@ -284,6 +284,31 @@ declare namespace LBDserver {
     const LbdProject: typeof LbdProject;
     const LbdDataset: typeof LbdDataset;
     const LbdDistribution: typeof LbdDistribution;
+    const vocabulary: {
+        LBD: {
+            PREFIX: string;
+            NAMESPACE: string;
+            PREFIX_AND_NAMESPACE: {
+                lbd: string;
+            };
+            NS: (localName: string) => string;
+            Aggregator: string;
+            Concept: string;
+            StringBasedIdentifier: string;
+            URIBasedIdentifier: string;
+            hasReference: string;
+            inDataset: string;
+            inDistribution: string;
+            hasIdentifier: string;
+            identifier: string;
+            aggregates: string;
+            hasProjectRegistry: string;
+            hasDatasetRegistry: string;
+            hasReferenceRegistry: string;
+            hasServiceRegistry: string;
+            hasSatellite: string;
+        };
+    };
 }
 
 export { LBDserver };

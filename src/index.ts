@@ -2,6 +2,7 @@ import MyLbdService from "./helpers/LbdService"
 import MyLbdProject from "./helpers/LbdProject"
 import MyLbdDataset from "./helpers/LbdDataset";
 import MyLbdDistribution from "./helpers/LbdDistribution";
+import LBD from "./helpers/vocab/lbd";
 // export class Consolid{
 
 //     public fetch;
@@ -25,4 +26,5 @@ export namespace LBDserver {
     export const LbdProject = MyLbdProject;
     export const LbdDataset = MyLbdDataset;
     export const LbdDistribution = MyLbdDistribution;
+    export const vocabulary = {LBD}
 }
