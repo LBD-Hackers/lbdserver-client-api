@@ -66,13 +66,16 @@ export default class LbdProject {
 
     // create different registries
     await this.createRegistryContainer("datasets/", makePublic, LBD.hasDatasetRegistry)
-    await this.createRegistryContainer("references/", makePublic, LBD.hasReferenceRegistry)
+    const referenceContainerUrl = await this.createRegistryContainer("references/", makePublic, LBD.hasReferenceRegistry)
     await this.createRegistryContainer("services/", makePublic, LBD.hasServiceRegistry)
 
     for (const part of existingPartialProjects) {
         await this.addPartialProject(part)
     }
 
+    const referenceMeta = new LbdDataset(this.fetch, referenceContainerUrl)
+    await referenceMeta.create()
+    await referenceMeta.addDistribution(Buffer.from(""), "text/turtle", {}, "data", makePublic)
     await this.init()
   }
 
@@ -122,6 +125,7 @@ export default class LbdProject {
         <${this.localProject}> <${property}> <${containerUrl}> .
       }`;
     await this.dataService.sparqlUpdate(this.localProject, q0)
+    return containerUrl
   }
 
   /////////////////////////////////////////////////////////

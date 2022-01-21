@@ -60,7 +60,12 @@ export default class LbdDataset {
     makePublic: boolean = false,
   ) {
     const datasetUrl = this.url
-    await this.dataService.createContainer(datasetUrl, makePublic)  
+
+    const status = await this.fetch(datasetUrl, {method: "HEAD"}).then(res => res.status)
+    if (status !== 200) {
+      await this.dataService.createContainer(datasetUrl, makePublic)
+    }
+    
     if (Object.keys(options).length > 0) {
       let q0 = `INSERT DATA { `
       for (const key of Object.keys(options)) {

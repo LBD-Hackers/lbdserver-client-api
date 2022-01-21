@@ -18,6 +18,7 @@ export default class LbdConcept {
   public registry: string;
   public id: string;
   public concept: string;
+  public distribution: string; 
 
   // include queryEngine to allow caching of querydata etc.
   public queryEngine: ActorInitSparql;
@@ -25,8 +26,9 @@ export default class LbdConcept {
 
   constructor(fetch: any, registry, id: string = v4()) {
     this.registry = registry;
+    this.distribution = registry + "data"
     this.id = id;
-    this.url = this.registry + this.id
+    this.url = this.distribution + "#" + this.id
     this.fetch = fetch;
     this.accessService = new AccessService(fetch);
     this.dataService = new DataService(fetch);
@@ -35,7 +37,7 @@ export default class LbdConcept {
 
   public async create() {
     const q0 = `INSERT DATA {<${this.url}> a <${LBD.Concept}> }`
-    await this.dataService.sparqlUpdate(this.registry, q0)
+    await this.dataService.sparqlUpdate(this.distribution, q0)
   }
 
   public async delete() {
@@ -44,14 +46,14 @@ export default class LbdConcept {
     } WHERE {
       <${this.url}> ?p ?o .
     }`
-    await this.dataService.sparqlUpdate(this.registry, q0)
+    await this.dataService.sparqlUpdate(this.distribution, q0)
   }
 
   public async addReference(identifier: string, dataset: string, distribution?: string) {
     const referenceId = v4()
-    const referenceUrl = this.registry + referenceId
+    const referenceUrl = this.distribution + "#" + referenceId
     const identifierId = v4()
-    const identifierUrl = this.registry + identifierId
+    const identifierUrl = this.distribution + "#" + identifierId
 
     const {formatted, identifierType} = this.getIdentifierType(identifier)
 
@@ -69,8 +71,8 @@ export default class LbdConcept {
       }`
     }
 
-    await this.dataService.sparqlUpdate(this.registry, q0)
-    await this.dataService.sparqlUpdate(this.registry, q0)
+    await this.dataService.sparqlUpdate(this.distribution, q0)
+    await this.dataService.sparqlUpdate(this.distribution, q0)
 
     return referenceUrl
   }
@@ -86,10 +88,10 @@ export default class LbdConcept {
       ?x ?y ?z.
     }`
     console.log('q0', q0);
-    await this.dataService.sparqlUpdate(this.registry, q0)
+    await this.dataService.sparqlUpdate(this.distribution, q0)
 
     const q1 = `DELETE {<${this.url}> <${LBD.hasReference}> <${referenceUrl}> .}`
-    await this.dataService.sparqlUpdate(this.registry, q1)
+    await this.dataService.sparqlUpdate(this.distribution, q1)
   }
 
   public async addAlias() {

@@ -24,10 +24,10 @@ import { IQueryResultBindings, IQueryResultBoolean, newEngine } from "@comunica/
 import { extract } from "jsonld-remote";
 
 
-const filePath1 = path.join(__dirname, "./artifacts/architectuur.gltf");
+const filePath1 = path.join(__dirname, "./artifacts/duplex.gltf");
 const fileUpload1 = fs.readFileSync(filePath1)
 
-const filePath2 = path.join(__dirname, "./artifacts/architectuur.ttl");
+const filePath2 = path.join(__dirname, "./artifacts/duplex.ttl");
 const fileUpload2 = fs.readFileSync(filePath2)
 // const testFile = new File(["test"], "myFile")
 
@@ -124,7 +124,7 @@ describe("Auth", () => {
   test("can create Project in LBD project registry", async () => {
     const repo = await lbd.getProjectRegistry(me)
     project = new LbdProject(session.fetch, repo + projectId)
-    await project.create()
+    await project.create(true)
     const status = await session.fetch(project.accessPoint, {method: "HEAD"}).then(res => res.status)
     expect(status).toBe(200)
   });
@@ -181,8 +181,9 @@ describe("Auth", () => {
     concept = await project.addConcept()
 
     const q = `ASK {<${concept.url}> a <${LBD.Concept}> .}`
+    console.log('q', q);
     const subject = extract(project.data, project.localProject)
-    const referenceRegistry = subject[LBD.hasReferenceRegistry][0]["@id"]
+    const referenceRegistry = subject[LBD.hasReferenceRegistry][0]["@id"] + "data"
     const res = await engine.query(q, {sources: [referenceRegistry], fetch: session.fetch}).then((r:any) => r.booleanResult)
     expect(res).toBe(true)
   })
@@ -200,18 +201,18 @@ describe("Auth", () => {
   //   // expect(res).toBe(true)
   // })
 
-  test("can align ttl and gltf", async () => {
-    await createReferences(project, distribution2.url, distribution1.url, session)
+  // test("can align ttl and gltf", async () => {
+  //   await createReferences(project, distribution2.url, distribution1.url, session)
 
-    // const q = `ASK {<${concept.url}> <${LBD.hasReference}> <${reference}> .}`
-    // console.log('q', q);
-    // const subject = extract(project.data, project.localProject)
-    // const referenceRegistry = subject[LBD.hasReferenceRegistry][0]["@id"]
-    // console.log('referenceRegistry', referenceRegistry);
-    // const res = await engine.query(q, {sources: [referenceRegistry], fetch: session.fetch}).then((r:any) => r.booleanResult)
+  //   // const q = `ASK {<${concept.url}> <${LBD.hasReference}> <${reference}> .}`
+  //   // console.log('q', q);
+  //   // const subject = extract(project.data, project.localProject)
+  //   // const referenceRegistry = subject[LBD.hasReferenceRegistry][0]["@id"]
+  //   // console.log('referenceRegistry', referenceRegistry);
+  //   // const res = await engine.query(q, {sources: [referenceRegistry], fetch: session.fetch}).then((r:any) => r.booleanResult)
 
-    // expect(res).toBe(true)
-  })
+  //   // expect(res).toBe(true)
+  // })
 
   /////////////////////////////////////////////////////////
   /////////////////////// CLEANUP /////////////////////////

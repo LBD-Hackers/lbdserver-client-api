@@ -184,6 +184,7 @@ declare class LbdConcept {
     registry: string;
     id: string;
     concept: string;
+    distribution: string;
     queryEngine: ActorInitSparql;
     url: string;
     constructor(fetch: any, registry: any, id?: string);
