@@ -47,7 +47,7 @@ export default class LBDService {
   }
 
   public async getAllProjects(aggregator) {
-    const data = this.fetch(aggregator, { headers: { "Accept": "application/ld+json" } }).then(t => t.json())
+    const data = await this.fetch(aggregator, { headers: { "Accept": "application/ld+json" } }).then(t => t.json())
     const myProjects = extract(data, aggregator)[LDP.contains].map(i => i["@id"])
     return myProjects
   }

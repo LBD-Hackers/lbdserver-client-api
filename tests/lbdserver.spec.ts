@@ -146,6 +146,11 @@ describe("Auth", () => {
       });
   })
 
+  test("can find all projects of stakeholder", async () => {
+    const endpoint = await lbd.getProjectRegistry(session.info.webId)
+    const projects = await lbd.getAllProjects(endpoint)
+    expect(projects.length).toBeGreaterThan(0)
+  })
 
   // TO RUN THIS TEST, SET A PROJECT ID YOU KNOW THIS STAKEHOLDER HAS IN THEIR PROJECT REPOSITORY
 
