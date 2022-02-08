@@ -6,7 +6,7 @@ import LbdDataset from "./LbdDataset"
 import LBD from "./vocab/lbd";
 import { AccessRights, ResourceType } from "./BaseDefinitions";
 import LBDService from "./LbdService";
-import {extract} from "jsonld-remote"
+import {extract} from "./functions"
 import {v4} from "uuid"
 
 export default class LbdProject {

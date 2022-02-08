@@ -1,6 +1,6 @@
 export const loginCredentials = {
-    "refreshToken" : "eE9qGoP7TcViih-qXkdvly6oUHf1Tt0aC8UqwyLcTCP",
-    "clientId"     : "3bCvSZyJ4HI1aAiKDLrWY",
-    "clientSecret" : "2TApU62b0GF8yAw4PdNIzSFioBVWCGuL6KM0UMr1pxCORH7qmIgFeuB1id4Au--lc6Mo7V4Csxmu2IDo3HRLew",
-    "oidcIssuer"   : "http://localhost:5000/",
-  }
+  "refreshToken" : "vvS5QOfnPrbUAj1HOVEd-YBuqKQf6A1rjXl-kSd-B2e",
+  "clientId"     : "cioYg3lmZRXFv4PQyNw1d",
+  "clientSecret" : "2JXuRbaKbGKfogbfDS1SzH3BP7faJ3DthflREWCaa_uI3MRHEMRgptpanDJ77fJzSN0Y5r_-x4034mVci227yw",
+  "oidcIssuer"   : "http://localhost:5000/",
+}

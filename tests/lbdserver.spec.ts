@@ -21,7 +21,7 @@ import mime from "mime-types"
 import LbdConcept from "../src/helpers/LbdConcept";
 import LBD from "../src/helpers/vocab/lbd";
 import { IQueryResultBindings, IQueryResultBoolean, newEngine } from "@comunica/actor-init-sparql";
-import { extract } from "jsonld-remote";
+import { extract } from "../src/helpers/functions"
 
 
 const filePath1 = path.join(__dirname, "./artifacts/duplex.gltf");
@@ -73,6 +73,8 @@ beforeAll(async () => {
 });
 
 describe("Auth", () => {
+  jest.setTimeout(15000)
+
   /////////////////////////////////////////////////////////
   ////////////////////// PREPARATION //////////////////////
   /////////////////////////////////////////////////////////
@@ -169,8 +171,8 @@ describe("Auth", () => {
   })
   
   test("can add distribution to dataset", async () => {
-    distribution1 = await dataset1.addDistribution(fileUpload1, "model/gltf+json")   
-    distribution2 = await dataset2.addDistribution(fileUpload2, "text/turtle")   
+    distribution1 = await dataset1.addDistribution(fileUpload1, "model/gltf+json", {}, undefined, true)   
+    distribution2 = await dataset2.addDistribution(fileUpload2, "text/turtle", {}, undefined, true)   
     expect(distribution1.data).not.toBe(undefined);
   })
 

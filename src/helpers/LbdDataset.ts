@@ -5,7 +5,7 @@ import { newEngine, IQueryResultBindings, ActorInitSparql } from "@comunica/acto
 import LBD from "./vocab/lbd";
 import { AccessRights, ResourceType } from "./BaseDefinitions";
 import LBDService from "./LbdService";
-import {extract} from "jsonld-remote"
+import {extract} from "./functions"
 import {v4} from "uuid"
 import { DCAT, RDFS } from "@inrupt/vocab-common-rdf";
 import LbdDistribution from './LbdDistribution'
@@ -65,6 +65,10 @@ export default class LbdDataset {
     if (status !== 200) {
       await this.dataService.createContainer(datasetUrl, makePublic)
     }
+
+    let q = `INSERT DATA {<${datasetUrl}> a <${DCAT.Dataset}> . }`
+
+    await this.dataService.sparqlUpdate(datasetUrl, q)
     
     if (Object.keys(options).length > 0) {
       let q0 = `INSERT DATA { `

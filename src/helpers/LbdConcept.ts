@@ -5,7 +5,7 @@ import { newEngine, IQueryResultBindings, ActorInitSparql } from "@comunica/acto
 import LBD from "./vocab/lbd";
 import { AccessRights, ResourceType } from "./BaseDefinitions";
 import LBDService from "./LbdService";
-import {extract} from "jsonld-remote"
+import {extract} from "./functions"
 import {v4} from "uuid"
 import { DCAT, DCTERMS, RDFS, XSD } from "@inrupt/vocab-common-rdf";
 import mime from "mime-types"
