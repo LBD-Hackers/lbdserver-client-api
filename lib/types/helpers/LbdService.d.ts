@@ -7,6 +7,7 @@ export default class LBDService {
     dataService: DataService;
     constructor(fetch: any, verbose?: boolean);
     validateWebId(webId: string): Promise<boolean>;
+    getAllProjects(aggregator: any): Promise<any>;
     getProjectRegistry(stakeholder: string): Promise<string | undefined>;
     createProjectRegistry(stakeholder: string, url: string, publiclyAccessible?: boolean): Promise<string>;
     removeProjectRegistry(stakeholder: string, url: string): Promise<void>;

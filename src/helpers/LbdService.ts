@@ -17,8 +17,8 @@ import {
   setDatetime,
   saveSolidDatasetAt,
 } from "@inrupt/solid-client";
-
-import { RDF, SCHEMA_INRUPT, DCAT } from "@inrupt/vocab-common-rdf";
+import { extract } from "./functions";
+import { RDF, SCHEMA_INRUPT, DCAT, LDP } from "@inrupt/vocab-common-rdf";
 import LBD from "./vocab/lbd";
 import { AccessRights, ResourceType } from "./BaseDefinitions";
 
@@ -44,6 +44,12 @@ export default class LBDService {
         return true
     }
     return false
+  }
+
+  public async getAllProjects(aggregator) {
+    const data = this.fetch(aggregator, { headers: { "Accept": "application/ld+json" } }).then(t => t.json())
+    const myProjects = extract(data, aggregator)[LDP.contains].map(i => i["@id"])
+    return myProjects
   }
 
   public async getProjectRegistry(stakeholder: string): Promise<string|undefined> {
