@@ -9,6 +9,8 @@ import {extract} from "./functions"
 import {v4} from "uuid"
 import { DCAT, DCTERMS, RDFS, XSD } from "@inrupt/vocab-common-rdf";
 import mime from "mime-types"
+import { Session as BrowserSession } from "@inrupt/solid-client-authn-browser";
+import { Session as NodeSession} from "@inrupt/solid-client-authn-node";
 
 export default class LbdConcept {
   public fetch;
@@ -20,18 +22,20 @@ export default class LbdConcept {
   public concept: string;
   public distribution: string; 
 
+  private session: BrowserSession | NodeSession
   // include queryEngine to allow caching of querydata etc.
   public queryEngine: ActorInitSparql;
   public url: string;
 
-  constructor(fetch: any, registry, id: string = v4()) {
+  constructor(session: BrowserSession | NodeSession, registry, id: string = v4()) {
     this.registry = registry;
     this.distribution = registry + "data"
     this.id = id;
     this.url = this.distribution + "#" + this.id
-    this.fetch = fetch;
-    this.accessService = new AccessService(fetch);
-    this.dataService = new DataService(fetch);
+    this.session = session
+    this.fetch = session.fetch;
+    this.accessService = new AccessService(session.fetch);
+    this.dataService = new DataService(session.fetch);
     this.queryEngine = newEngine();
   }
 

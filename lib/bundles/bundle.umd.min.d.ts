@@ -1,6 +1,8 @@
 /// <reference types="node" />
 import * as _inrupt_solid_client from '@inrupt/solid-client';
 import * as _inrupt_solid_client_dist_interfaces from '@inrupt/solid-client/dist/interfaces';
+import { Session } from '@inrupt/solid-client-authn-browser';
+import { Session as Session$1 } from '@inrupt/solid-client-authn-node';
 import { ActorInitSparql } from '@comunica/actor-init-sparql';
 
 declare class AccessRights {
@@ -169,7 +171,8 @@ declare class LBDService {
     verbose: boolean;
     accessService: AccessService;
     dataService: DataService;
-    constructor(fetch: any, verbose?: boolean);
+    private session;
+    constructor(session: Session | Session$1, verbose?: boolean);
     validateWebId(webId: string): Promise<boolean>;
     getAllProjects(aggregator: any): Promise<any>;
     getProjectRegistry(stakeholder: string): Promise<string | undefined>;
@@ -186,9 +189,10 @@ declare class LbdConcept {
     id: string;
     concept: string;
     distribution: string;
+    private session;
     queryEngine: ActorInitSparql;
     url: string;
-    constructor(fetch: any, registry: any, id?: string);
+    constructor(session: Session | Session$1, registry: any, id?: string);
     create(): Promise<void>;
     delete(): Promise<void>;
     addReference(identifier: string, dataset: string, distribution?: string): Promise<string>;
@@ -207,7 +211,8 @@ declare class LbdDistribution {
     queryEngine: ActorInitSparql;
     url: string;
     data: any;
-    constructor(fetch: any, url: any);
+    private session;
+    constructor(session: Session | Session$1, url: string);
     checkExistence(): Promise<boolean>;
     init(options?: object): Promise<void>;
     getContentType(): Promise<any>;
@@ -225,8 +230,9 @@ declare class LbdDataset {
     projectId: string;
     url: string;
     data: object[];
+    private session;
     queryEngine: ActorInitSparql;
-    constructor(fetch: any, url: any);
+    constructor(session: Session | Session$1, url: string);
     checkExistence(): Promise<boolean>;
     init(): Promise<any>;
     /**
@@ -253,12 +259,13 @@ declare class LbdProject {
     projectId: string;
     accessPoint: string;
     data: object[];
+    private session;
     queryEngine: ActorInitSparql;
     localProject: string;
-    constructor(fetch: any, accessPoint: string, verbose?: boolean);
+    constructor(session: Session | Session$1, accessPoint: string, verbose?: boolean);
     checkExistence(): Promise<boolean>;
     init(): Promise<any>;
-    create(makePublic?: boolean, existingPartialProjects?: string[]): Promise<void>;
+    create(existingPartialProjects?: string[], options?: object, makePublic?: boolean): Promise<void>;
     addPartialProject(part: string): Promise<void>;
     addStakeholder(webId: string, accessRights?: AccessRights): Promise<void>;
     delete(): Promise<void>;

@@ -68,7 +68,7 @@ beforeAll(async () => {
     console.error(
       "Please get login credentials with npx @inrupt/generate-oidc-token before running tests!"
     );
-  lbd = new LbdService(session.fetch);
+  lbd = new LbdService(session);
   me = session.info.webId;
 });
 
@@ -125,8 +125,8 @@ describe("Auth", () => {
   
   test("can create Project in LBD project registry", async () => {
     const repo = await lbd.getProjectRegistry(me)
-    project = new LbdProject(session.fetch, repo + projectId)
-    await project.create(true)
+    project = new LbdProject(session, repo + projectId)
+    await project.create(undefined, undefined, true)
     const status = await session.fetch(project.accessPoint, {method: "HEAD"}).then(res => res.status)
     expect(status).toBe(200)
   });
@@ -149,6 +149,7 @@ describe("Auth", () => {
   test("can find all projects of stakeholder", async () => {
     const endpoint = await lbd.getProjectRegistry(session.info.webId)
     const projects = await lbd.getAllProjects(endpoint)
+    console.log('projects', projects);
     expect(projects.length).toBeGreaterThan(0)
   })
 

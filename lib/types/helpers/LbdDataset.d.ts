@@ -4,6 +4,8 @@ import DataService from "./data-service";
 import { ActorInitSparql } from "@comunica/actor-init-sparql";
 import LBDService from "./LbdService";
 import LbdDistribution from './LbdDistribution';
+import { Session as BrowserSession } from "@inrupt/solid-client-authn-browser";
+import { Session as NodeSession } from "@inrupt/solid-client-authn-node";
 export default class LbdDataset {
     fetch: any;
     accessService: AccessService;
@@ -12,8 +14,9 @@ export default class LbdDataset {
     projectId: string;
     url: string;
     data: object[];
+    private session;
     queryEngine: ActorInitSparql;
-    constructor(fetch: any, url: any);
+    constructor(session: BrowserSession | NodeSession, url: string);
     checkExistence(): Promise<boolean>;
     init(): Promise<any>;
     /**

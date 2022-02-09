@@ -8,6 +8,9 @@ import { AccessRights, ResourceType } from "./BaseDefinitions";
 import LBDService from "./LbdService";
 import {extract} from "./functions"
 import {v4} from "uuid"
+import { DCTERMS } from "@inrupt/vocab-common-rdf";
+import { Session as BrowserSession } from "@inrupt/solid-client-authn-browser";
+import { Session as NodeSession} from "@inrupt/solid-client-authn-node";
 
 export default class LbdProject {
   public fetch;
@@ -18,22 +21,24 @@ export default class LbdProject {
   public projectId: string;
   public accessPoint: string;
   public data: object[];
+  
+  private session: BrowserSession | NodeSession;
 
   // include queryEngine to allow caching of querydata etc.
   public queryEngine: ActorInitSparql;
   public localProject: string;
 
-  constructor(fetch: any, accessPoint: string, verbose: boolean = false) {
+  constructor(session: BrowserSession | NodeSession, accessPoint: string, verbose: boolean = false) {
     if (!accessPoint.endsWith("/")) accessPoint += "/"
-
-    this.fetch = fetch;
+    this.session = session
+    this.fetch = session.fetch;
     this.accessPoint = accessPoint;
     this.localProject = accessPoint + "local/"
     this.verbose = verbose;
     this.projectId = accessPoint.split('/')[accessPoint.split("/").length  - 2];
-    this.accessService = new AccessService(fetch);
-    this.dataService = new DataService(fetch);
-    this.lbdService = new LBDService(fetch);
+    this.accessService = new AccessService(session.fetch);
+    this.dataService = new DataService(session.fetch);
+    this.lbdService = new LBDService(session);
     this.queryEngine = newEngine();
   }
 
@@ -54,8 +59,9 @@ export default class LbdProject {
 
   // initialise a project
   public async create(
+    existingPartialProjects: string[] = [],
+    options: object = {},
     makePublic: boolean = false,
-    existingPartialProjects: string[] = []
   ) {
     const local = this.accessPoint + 'local/'
     existingPartialProjects.push(local)
@@ -73,7 +79,23 @@ export default class LbdProject {
         await this.addPartialProject(part)
     }
 
-    const referenceMeta = new LbdDataset(this.fetch, referenceContainerUrl)
+    let q = `INSERT DATA {<${this.accessPoint}> <${DCTERMS.creator}> "${this.session.info.webId}" . }`
+    await this.dataService.sparqlUpdate(local, q)
+    await this.dataService.sparqlUpdate(this.accessPoint, q)
+
+    // create optional metadata (e.g. label etc.)
+    if (Object.keys(options).length > 0) {
+      let q0 = `INSERT DATA { `
+      for (const key of Object.keys(options)) {
+        q0 += `<${this.accessPoint}> <${key}> "${options[key]}" .`
+      }    
+      q0 += "}"
+      await this.dataService.sparqlUpdate(this.accessPoint, q0)
+    }
+
+
+
+    const referenceMeta = new LbdDataset(this.session, referenceContainerUrl)
     await referenceMeta.create()
     await referenceMeta.addDistribution(Buffer.from(""), "text/turtle", {}, "data", makePublic)
     await this.init()
@@ -147,7 +169,7 @@ export default class LbdProject {
     const subject = extract(this.data, this.localProject)
     const datasetRegistry = subject[LBD.hasDatasetRegistry][0]["@id"]
     const datasetUrl = datasetRegistry + id + "/"
-    const theDataset = new LbdDataset(this.fetch, datasetUrl)
+    const theDataset = new LbdDataset(this.session, datasetUrl)
     await theDataset.create(options, makePublic)
     return theDataset
   }
@@ -156,7 +178,7 @@ export default class LbdProject {
     datasetUrl: string
   ) {
     if (!datasetUrl.endsWith('/')) datasetUrl += "/"
-    const ds = new LbdDataset(this.fetch, datasetUrl)
+    const ds = new LbdDataset(this.session, datasetUrl)
     await ds.delete()
   }
 
@@ -166,7 +188,7 @@ export default class LbdProject {
     const subject = extract(this.data, this.localProject)
     const datasetRegistry = subject[LBD.hasDatasetRegistry][0]["@id"]
     const datasetUrl = datasetRegistry + datasetId + "/"
-    const ds = new LbdDataset(this.fetch, datasetUrl)
+    const ds = new LbdDataset(this.session, datasetUrl)
     await ds.delete()
   }
 
@@ -178,7 +200,7 @@ export default class LbdProject {
   public async addConcept(): Promise<LbdConcept> {
     const subject = extract(this.data, this.localProject)
     const referenceRegistry = subject[LBD.hasReferenceRegistry][0]["@id"]
-    const ref = new LbdConcept(this.fetch, referenceRegistry)
+    const ref = new LbdConcept(this.session, referenceRegistry)
     await ref.create()
     return ref
   }
@@ -188,7 +210,7 @@ export default class LbdProject {
     const id = parts.pop()
     const referenceRegistry = parts.join("/")
     console.log('id, referenceRegistry', id, referenceRegistry);
-    const ref = new LbdConcept(this.fetch, referenceRegistry, id)
+    const ref = new LbdConcept(this.session, referenceRegistry, id)
     await ref.delete()
   }
 

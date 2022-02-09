@@ -9,6 +9,8 @@ import {extract} from "./functions"
 import {v4} from "uuid"
 import { DCAT, RDFS } from "@inrupt/vocab-common-rdf";
 import LbdDistribution from './LbdDistribution'
+import { Session as BrowserSession } from "@inrupt/solid-client-authn-browser";
+import { Session as NodeSession} from "@inrupt/solid-client-authn-node";
 
 export default class LbdDataset {
   public fetch;
@@ -19,17 +21,18 @@ export default class LbdDataset {
   public url: string;
 
   public data: object[];
+  private session: BrowserSession | NodeSession
 
   // include queryEngine to allow caching of querydata etc.
   public queryEngine: ActorInitSparql;
 
-  constructor(fetch: any, url) {
-
-    this.fetch = fetch;
+  constructor(session: BrowserSession | NodeSession, url: string) {
+    this.session = session
+    this.fetch = session.fetch;
     this.url = url
-    this.accessService = new AccessService(fetch);
-    this.dataService = new DataService(fetch);
-    this.lbdService = new LBDService(fetch);
+    this.accessService = new AccessService(session.fetch);
+    this.dataService = new DataService(session.fetch);
+    this.lbdService = new LBDService(session);
     this.queryEngine = newEngine();
   }
 
@@ -95,7 +98,7 @@ export default class LbdDataset {
   /////////////////////////////////////////////////////////
   public async addDistribution(distribution: File | Buffer, mimetype? ,options: object = {}, distributionId: string = v4(), makePublic: boolean = false) {      
     const distributionUrl = this.url + distributionId    
-    const dist = new LbdDistribution(this.fetch, distributionUrl)
+    const dist = new LbdDistribution(this.session, distributionUrl)
     await dist.create(distribution, {}, mimetype, makePublic)
     await dist.init()
     return dist

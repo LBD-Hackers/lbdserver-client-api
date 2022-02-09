@@ -1,11 +1,14 @@
 import AccessService from "./access-service";
 import DataService from "./data-service";
+import { Session as BrowserSession } from "@inrupt/solid-client-authn-browser";
+import { Session as NodeSession } from "@inrupt/solid-client-authn-node";
 export default class LBDService {
     fetch: any;
     verbose: boolean;
     accessService: AccessService;
     dataService: DataService;
-    constructor(fetch: any, verbose?: boolean);
+    private session;
+    constructor(session: BrowserSession | NodeSession, verbose?: boolean);
     validateWebId(webId: string): Promise<boolean>;
     getAllProjects(aggregator: any): Promise<any>;
     getProjectRegistry(stakeholder: string): Promise<string | undefined>;

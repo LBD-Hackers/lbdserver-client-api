@@ -21,18 +21,22 @@ import { extract } from "./functions";
 import { RDF, SCHEMA_INRUPT, DCAT, LDP } from "@inrupt/vocab-common-rdf";
 import LBD from "./vocab/lbd";
 import { AccessRights, ResourceType } from "./BaseDefinitions";
+import { Session as BrowserSession } from "@inrupt/solid-client-authn-browser";
+import { Session as NodeSession} from "@inrupt/solid-client-authn-node";
 
 export default class LBDService {
   public fetch;
   public verbose: boolean = false;
   public accessService: AccessService;
   public dataService: DataService;
-
-  constructor(fetch: any, verbose: boolean = false) {
-    this.fetch = fetch;
+  private session: BrowserSession | NodeSession
+  
+  constructor(session: BrowserSession | NodeSession, verbose: boolean = false) {
+    this.session = session
+    this.fetch = session.fetch;
     this.verbose = verbose;
-    this.accessService = new AccessService(fetch);
-    this.dataService = new DataService(fetch);
+    this.accessService = new AccessService(session.fetch);
+    this.dataService = new DataService(session.fetch);
   }
 
   /////////////////////////////////////////////////////////

@@ -1,6 +1,8 @@
 import AccessService from "./access-service";
 import DataService from "./data-service";
 import { ActorInitSparql } from "@comunica/actor-init-sparql";
+import { Session as BrowserSession } from "@inrupt/solid-client-authn-browser";
+import { Session as NodeSession } from "@inrupt/solid-client-authn-node";
 export default class LbdConcept {
     fetch: any;
     accessService: AccessService;
@@ -10,9 +12,10 @@ export default class LbdConcept {
     id: string;
     concept: string;
     distribution: string;
+    private session;
     queryEngine: ActorInitSparql;
     url: string;
-    constructor(fetch: any, registry: any, id?: string);
+    constructor(session: BrowserSession | NodeSession, registry: any, id?: string);
     create(): Promise<void>;
     delete(): Promise<void>;
     addReference(identifier: string, dataset: string, distribution?: string): Promise<string>;

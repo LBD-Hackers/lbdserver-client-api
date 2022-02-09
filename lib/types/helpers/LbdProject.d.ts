@@ -5,6 +5,8 @@ import { ActorInitSparql } from "@comunica/actor-init-sparql";
 import LbdDataset from "./LbdDataset";
 import { AccessRights } from "./BaseDefinitions";
 import LBDService from "./LbdService";
+import { Session as BrowserSession } from "@inrupt/solid-client-authn-browser";
+import { Session as NodeSession } from "@inrupt/solid-client-authn-node";
 export default class LbdProject {
     fetch: any;
     verbose: boolean;
@@ -14,12 +16,13 @@ export default class LbdProject {
     projectId: string;
     accessPoint: string;
     data: object[];
+    private session;
     queryEngine: ActorInitSparql;
     localProject: string;
-    constructor(fetch: any, accessPoint: string, verbose?: boolean);
+    constructor(session: BrowserSession | NodeSession, accessPoint: string, verbose?: boolean);
     checkExistence(): Promise<boolean>;
     init(): Promise<any>;
-    create(makePublic?: boolean, existingPartialProjects?: string[]): Promise<void>;
+    create(existingPartialProjects?: string[], options?: object, makePublic?: boolean): Promise<void>;
     addPartialProject(part: string): Promise<void>;
     addStakeholder(webId: string, accessRights?: AccessRights): Promise<void>;
     delete(): Promise<void>;

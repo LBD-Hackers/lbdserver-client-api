@@ -9,6 +9,8 @@ import {extract} from "jsonld-remote"
 import {v4} from "uuid"
 import { DCAT, DCTERMS, RDFS } from "@inrupt/vocab-common-rdf";
 import mime from "mime-types"
+import { Session as BrowserSession } from "@inrupt/solid-client-authn-browser";
+import { Session as NodeSession} from "@inrupt/solid-client-authn-node";
 
 export default class LbdDistribution {
   public fetch;
@@ -23,18 +25,20 @@ export default class LbdDistribution {
   public url: string;
   public data: any;
 
-  constructor(fetch: any, url) {
+  private session:  BrowserSession | NodeSession
+
+  constructor(session: BrowserSession | NodeSession, url: string) {
     let datasetUrl = url.split('/')
     datasetUrl.pop()
     const ds = datasetUrl.join("/") + '/'
     
-    this.fetch = fetch;
+    this.fetch = session.fetch;
     this.url = url
     this.datasetUrl = ds
   
-    this.accessService = new AccessService(fetch);
-    this.dataService = new DataService(fetch);
-    this.lbdService = new LBDService(fetch);
+    this.accessService = new AccessService(session.fetch);
+    this.dataService = new DataService(session.fetch);
+    this.lbdService = new LBDService(session);
     this.queryEngine = newEngine();
   }
 
@@ -96,8 +100,8 @@ export default class LbdDistribution {
             <${DCTERMS.format}> <https://www.iana.org/assignments/media-types/${mimetype}> ;
             <${DCAT.downloadURL}> <${this.url}> .
       }`
-      await this.queryEngine.query(q, {sources: [this.datasetUrl], fetch: this.fetch})
-
+      // await this.queryEngine.query(q, {sources: [this.datasetUrl], fetch: this.fetch})
+      await this.dataService.sparqlUpdate(this.datasetUrl, q)
     if (Object.keys(options).length > 0) {
         let q0 = `INSERT DATA { `
         for (const key of Object.keys(options)) {
