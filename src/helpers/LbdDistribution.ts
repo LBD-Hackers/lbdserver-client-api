@@ -81,7 +81,7 @@ export default class LbdDistribution {
     file: File | Buffer,
     options: object = {},
     mimetype?: string,
-    makePublic: boolean = false,
+    makePublic?: boolean,
   ) {
       if (!mimetype) {
           try {
@@ -93,6 +93,10 @@ export default class LbdDistribution {
       }
           
     await this.dataService.writeFileToPod(file, this.url, makePublic, mimetype)
+      //workaround to allow inherited access rights
+      if (makePublic === undefined) {
+        this.dataService.deleteFile(this.url + ".acl")
+      }
 
       const q = `INSERT DATA {
         <${this.datasetUrl}> <${DCAT.distribution}> <${this.url}> .

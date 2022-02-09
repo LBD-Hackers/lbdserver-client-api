@@ -60,13 +60,18 @@ export default class LbdDataset {
    */
   public async create(
     options: object = {},
-    makePublic: boolean = false,
+    makePublic?: boolean,
   ) {
     const datasetUrl = this.url
 
     const status = await this.fetch(datasetUrl, {method: "HEAD"}).then(res => res.status)
     if (status !== 200) {
       await this.dataService.createContainer(datasetUrl, makePublic)
+
+      //workaround to allow inherited access rights
+      if (makePublic === undefined) {
+        this.dataService.deleteFile(datasetUrl + ".acl")
+      }
     }
 
     let q = `INSERT DATA {<${datasetUrl}> a <${DCAT.Dataset}> . }`

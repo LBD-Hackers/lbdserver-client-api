@@ -172,13 +172,13 @@ describe("Auth", () => {
   /////////////////////////////////////////////////////////
   test("can add dataset to partial project", async () => {
     dataset1 = await project.addDataset({[RDFS.label]: "theLabel"}, true)
-    dataset2 = await project.addDataset({[RDFS.label]: "theLabel"}, true)
+    dataset2 = await project.addDataset({[RDFS.label]: "theLabel"})
     expect(dataset1.data).not.toBe(undefined);
   })
   
   test("can add distribution to dataset", async () => {
     distribution1 = await dataset1.addDistribution(fileUpload1, "model/gltf+json", {}, undefined, true)   
-    distribution2 = await dataset2.addDistribution(fileUpload2, "text/turtle", {}, undefined, true)   
+    distribution2 = await dataset2.addDistribution(fileUpload2, "text/turtle", {}, undefined)   
     expect(distribution1.data).not.toBe(undefined);
   })
 
