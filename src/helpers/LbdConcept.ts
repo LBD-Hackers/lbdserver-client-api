@@ -23,8 +23,6 @@ export default class LbdConcept {
   public distribution: string; 
 
   private session: BrowserSession | NodeSession
-  // include queryEngine to allow caching of querydata etc.
-  public queryEngine: ActorInitSparql;
   public url: string;
 
   constructor(session: BrowserSession | NodeSession, registry, id: string = v4()) {
@@ -36,7 +34,6 @@ export default class LbdConcept {
     this.fetch = session.fetch;
     this.accessService = new AccessService(session.fetch);
     this.dataService = new DataService(session.fetch);
-    this.queryEngine = newEngine();
   }
 
   public async create() {

@@ -23,9 +23,6 @@ export default class LbdDataset {
   public data: object[];
   private session: BrowserSession | NodeSession
 
-  // include queryEngine to allow caching of querydata etc.
-  public queryEngine: ActorInitSparql;
-
   constructor(session: BrowserSession | NodeSession, url: string) {
     this.session = session
     this.fetch = session.fetch;
@@ -33,7 +30,6 @@ export default class LbdDataset {
     this.accessService = new AccessService(session.fetch);
     this.dataService = new DataService(session.fetch);
     this.lbdService = new LBDService(session);
-    this.queryEngine = newEngine();
   }
 
   public async checkExistence() {

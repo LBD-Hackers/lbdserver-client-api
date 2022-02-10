@@ -20,8 +20,6 @@ export default class LbdDistribution {
   public datasetUrl: string;
   public contentType: string;
 
-  // include queryEngine to allow caching of querydata etc.
-  public queryEngine: ActorInitSparql;
   public url: string;
   public data: any;
 
@@ -39,7 +37,6 @@ export default class LbdDistribution {
     this.accessService = new AccessService(session.fetch);
     this.dataService = new DataService(session.fetch);
     this.lbdService = new LBDService(session);
-    this.queryEngine = newEngine();
   }
 
   public async checkExistence() {
@@ -57,8 +54,9 @@ export default class LbdDistribution {
   }
 
   public async getContentType() {
+    const myEngine = newEngine()
     const q0 = `SELECT ?ct where {?id <${DCTERMS.format}> ?ct}`
-    const ct = await this.queryEngine.query(q0, {sources: [this.datasetUrl], fetch: this.fetch}).then((res: any) => res.bindings())
+    const ct = await myEngine.query(q0, {sources: [this.datasetUrl], fetch: this.fetch}).then((res: any) => res.bindings())
     if (ct.length > 0) {
       const value = ct[0].get('?ct').value
       this.contentType = value
@@ -104,7 +102,6 @@ export default class LbdDistribution {
             <${DCTERMS.format}> <https://www.iana.org/assignments/media-types/${mimetype}> ;
             <${DCAT.downloadURL}> <${this.url}> .
       }`
-      // await this.queryEngine.query(q, {sources: [this.datasetUrl], fetch: this.fetch})
       await this.dataService.sparqlUpdate(this.datasetUrl, q)
     if (Object.keys(options).length > 0) {
         let q0 = `INSERT DATA { `
@@ -117,6 +114,7 @@ export default class LbdDistribution {
   }
 
   public async delete() {
+    const myEngine = newEngine()
     await this.dataService.deleteFile(this.url)
     // also update dataset
     const q0 = `DELETE {
@@ -124,14 +122,14 @@ export default class LbdDistribution {
     } WHERE {
       <${this.url}> ?p ?o .
     }`
-    await this.queryEngine.query(q0, {sources: [this.datasetUrl], fetch: this.fetch})
+    await myEngine.query(q0, {sources: [this.datasetUrl], fetch: this.fetch})
 
     const q1 = `DELETE {
       ?s ?p <${this.url}> .
     } WHERE {
       ?s ?p <${this.url}> .
     }`
-    await this.queryEngine.query(q1, {sources: [this.datasetUrl], fetch: this.fetch})
+    await myEngine.query(q1, {sources: [this.datasetUrl], fetch: this.fetch})
 
     return
   }

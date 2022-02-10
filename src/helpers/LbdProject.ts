@@ -27,7 +27,6 @@ export default class LbdProject {
   private session: BrowserSession | NodeSession;
 
   // include queryEngine to allow caching of querydata etc.
-  public queryEngine: ActorInitSparql;
   public localProject: string;
 
   constructor(session: BrowserSession | NodeSession, accessPoint: string, verbose: boolean = false) {
@@ -205,7 +204,6 @@ export default class LbdProject {
     const { data } = await myEngine.resultToString(results,'application/sparql-results+json');
     const asJson = await parseStream(data)
     const partials = asJson["results"].bindings.map(item => item["partial"].value)
-    console.log('partials', partials)
     return partials
   }
 
@@ -263,7 +261,6 @@ export default class LbdProject {
     const parts = url.split("/")
     const id = parts.pop()
     const referenceRegistry = parts.join("/")
-    console.log('id, referenceRegistry', id, referenceRegistry);
     const ref = new LbdConcept(this.session, referenceRegistry, id)
     await ref.delete()
   }
