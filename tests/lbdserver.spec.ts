@@ -175,6 +175,11 @@ describe("Auth", () => {
     dataset2 = await project.addDataset({[RDFS.label]: "theLabel"})
     expect(dataset1.data).not.toBe(undefined);
   })
+
+  test("can get all datasets of a local project", async () => {
+    const ds = await project.getAllDatasetUrls()
+    expect(ds.length).toBeGreaterThan(0)
+  })
   
   test("can add distribution to dataset", async () => {
     distribution1 = await dataset1.addDistribution(fileUpload1, "model/gltf+json", {}, undefined, true)   

@@ -45,3 +45,14 @@ export function computeChecksumMd5(file: File): Promise<string> {
       processChunk(0);
     });
   }
+
+export function parseStream(stream) {
+  const chunks = [];
+  return new Promise((resolve, reject) => {
+    stream.on("data", (chunk) => chunks.push(Buffer.from(chunk)));
+    stream.on("error", (err) => reject(err));
+    stream.on("end", () =>{
+      resolve(JSON.parse(Buffer.concat(chunks).toString("utf8")))
+    });
+  });
+}

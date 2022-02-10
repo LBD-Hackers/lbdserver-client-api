@@ -283,6 +283,13 @@ declare class LbdProject {
     addDataset(options?: object, makePublic?: boolean, id?: string): Promise<LbdDataset>;
     deleteDataset(datasetUrl: string): Promise<void>;
     deleteDatasetById(datasetId: string): Promise<void>;
+    private getAllPartialProjects;
+    private getSingleQueryResult;
+    getAllDatasetUrls(options?: {
+        query: string;
+        asStream: boolean;
+        local: boolean;
+    }): Promise<any>;
     addConcept(): Promise<LbdConcept>;
     deleteConcept(url: string): Promise<void>;
     addAlias(): Promise<void>;

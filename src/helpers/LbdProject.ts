@@ -11,6 +11,8 @@ import {v4} from "uuid"
 import { DCTERMS } from "@inrupt/vocab-common-rdf";
 import { Session as BrowserSession } from "@inrupt/solid-client-authn-browser";
 import { Session as NodeSession} from "@inrupt/solid-client-authn-node";
+import { LDP } from "@inrupt/vocab-common-rdf";
+import { parseStream } from "./utils";
 
 export default class LbdProject {
   public fetch;
@@ -190,6 +192,52 @@ export default class LbdProject {
     const datasetUrl = datasetRegistry + datasetId + "/"
     const ds = new LbdDataset(this.session, datasetUrl)
     await ds.delete()
+  }
+
+  private async getAllPartialProjects() {
+    const q = `SELECT ?partial WHERE {<${this.accessPoint}> <${LBD.aggregates}> ?partial}`
+    const results = await this.queryEngine.query(q, {sources: [this.accessPoint], fetch: this.fetch})
+    const { data } = await this.queryEngine.resultToString(results,'application/sparql-results+json');
+    const asJson = await parseStream(data)
+    const partials = asJson["results"].bindings.map(item => item["partial"].value)
+    console.log('partials', partials)
+    return partials
+  }
+
+  private async getSingleQueryResult(source, property) {
+    const q = `SELECT ?res WHERE {<${source}> <${property}> ?res}`
+    const bindings = await this.queryEngine.query(q, {sources: [source], fetch: this.fetch}).then((i: IQueryResultBindings) => i.bindings())
+    return bindings[0].get("?res").value
+  }
+
+  public async getAllDatasetUrls(options?: {query: string, asStream: boolean, local: boolean}) {
+    const subject = extract(this.data, this.localProject)
+    const sources = []
+    if (options && options.local) {
+      sources.push(subject[LBD.hasDatasetRegistry][0]["@id"])
+    } else {
+      const partials = await this.getAllPartialProjects()
+      for (const p of partials) {
+        const dsReg = await this.getSingleQueryResult(p, LBD.hasDatasetRegistry)
+        console.log('dsReg',p,  dsReg)
+        sources.push(dsReg)
+      }
+    }
+    let q
+    if (!options || !options.query) {
+      q = `SELECT ?dataset WHERE {?registry <${LDP.contains}> ?dataset}`
+    } else {
+      q = options.query
+    }
+
+    const results = await this.queryEngine.query(q, {sources, fetch: this.fetch})
+    const { data } = await this.queryEngine.resultToString(results,'application/sparql-results+json');
+    if (options && options.asStream) {
+      return data
+    } else {
+      const parsed = await parseStream(data);
+      return parsed["results"].bindings.map(i => i["dataset"].value)
+    }
   }
 
   /////////////////////////////////////////////////////////
