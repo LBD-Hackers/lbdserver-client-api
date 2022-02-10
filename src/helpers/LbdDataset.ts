@@ -7,7 +7,7 @@ import { AccessRights, ResourceType } from "./BaseDefinitions";
 import LBDService from "./LbdService";
 import {extract} from "./functions"
 import {v4} from "uuid"
-import { DCAT, RDFS } from "@inrupt/vocab-common-rdf";
+import { ACL, DCAT, FOAF, RDFS } from "@inrupt/vocab-common-rdf";
 import LbdDistribution from './LbdDistribution'
 import { Session as BrowserSession } from "@inrupt/solid-client-authn-browser";
 import { Session as NodeSession} from "@inrupt/solid-client-authn-node";
@@ -69,6 +69,12 @@ export default class LbdDataset {
       await this.dataService.createContainer(datasetUrl, makePublic)
 
       //workaround to allow inherited access rights
+
+      if (makePublic) {
+        let aclDefault = `INSERT {?rule <${ACL.default}> <${datasetUrl}>} WHERE {?rule a <${ACL.Authorization}> ; <${ACL.agentClass}> <${FOAF.Agent}>}`
+        await this.dataService.sparqlUpdate(datasetUrl + ".acl", aclDefault)
+      }
+
       if (makePublic === undefined) {
         this.dataService.deleteFile(datasetUrl + ".acl")
       }

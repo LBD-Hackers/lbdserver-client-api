@@ -8,7 +8,7 @@ import { AccessRights, ResourceType } from "./BaseDefinitions";
 import LBDService from "./LbdService";
 import {extract} from "./functions"
 import {v4} from "uuid"
-import { DCTERMS } from "@inrupt/vocab-common-rdf";
+import { ACL, DCTERMS, FOAF } from "@inrupt/vocab-common-rdf";
 import { Session as BrowserSession } from "@inrupt/solid-client-authn-browser";
 import { Session as NodeSession} from "@inrupt/solid-client-authn-node";
 import { LDP } from "@inrupt/vocab-common-rdf";
@@ -70,6 +70,10 @@ export default class LbdProject {
     // create global access point
     await this.dataService.createContainer(this.accessPoint, makePublic)
     await this.dataService.createContainer(local, makePublic)
+    if (makePublic) {
+      let aclDefault = `INSERT {?rule <${ACL.default}> <${local}>} WHERE {?rule a <${ACL.Authorization}> ; <${ACL.agentClass}> <${FOAF.Agent}>}`
+      await this.dataService.sparqlUpdate(local + '.acl', aclDefault)
+    }
 
     // create different registries
     await this.createRegistryContainer("datasets/", makePublic, LBD.hasDatasetRegistry)
