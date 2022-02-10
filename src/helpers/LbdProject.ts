@@ -41,7 +41,6 @@ export default class LbdProject {
     this.accessService = new AccessService(session.fetch);
     this.dataService = new DataService(session.fetch);
     this.lbdService = new LBDService(session);
-    this.queryEngine = newEngine();
   }
 
   public async checkExistence() {
@@ -119,7 +118,8 @@ export default class LbdProject {
   }
 
   public async findAllPartialProjects() {
-    const projects = await this.queryEngine.query(`SELECT ?proj WHERE {<${this.accessPoint}> <${LBD.aggregates}> ?proj}`, {sources: [this.accessPoint], fetch: this.fetch}).then((i: any) => i.bindings()).then(i => i.map(r => r.get('?proj').value))
+    const myEngine = newEngine()
+    const projects = await myEngine.query(`SELECT ?proj WHERE {<${this.accessPoint}> <${LBD.aggregates}> ?proj}`, {sources: [this.accessPoint], fetch: this.fetch}).then((i: any) => i.bindings()).then(i => i.map(r => r.get('?proj').value))
     return projects
   }
 
@@ -195,9 +195,10 @@ export default class LbdProject {
   }
 
   private async getAllPartialProjects() {
+    const myEngine = newEngine()
     const q = `SELECT ?partial WHERE {<${this.accessPoint}> <${LBD.aggregates}> ?partial}`
-    const results = await this.queryEngine.query(q, {sources: [this.accessPoint], fetch: this.fetch})
-    const { data } = await this.queryEngine.resultToString(results,'application/sparql-results+json');
+    const results = await myEngine.query(q, {sources: [this.accessPoint], fetch: this.fetch})
+    const { data } = await myEngine.resultToString(results,'application/sparql-results+json');
     const asJson = await parseStream(data)
     const partials = asJson["results"].bindings.map(item => item["partial"].value)
     console.log('partials', partials)
@@ -205,12 +206,14 @@ export default class LbdProject {
   }
 
   private async getSingleQueryResult(source, property) {
+    const myEngine = newEngine()
     const q = `SELECT ?res WHERE {<${source}> <${property}> ?res}`
-    const bindings = await this.queryEngine.query(q, {sources: [source], fetch: this.fetch}).then((i: IQueryResultBindings) => i.bindings())
+    const bindings = await myEngine.query(q, {sources: [source], fetch: this.fetch}).then((i: IQueryResultBindings) => i.bindings())
     return bindings[0].get("?res").value
   }
 
   public async getAllDatasetUrls(options?: {query: string, asStream: boolean, local: boolean}) {
+    const myEngine = newEngine()
     const subject = extract(this.data, this.localProject)
     const sources = []
     if (options && options.local) {
@@ -219,7 +222,6 @@ export default class LbdProject {
       const partials = await this.getAllPartialProjects()
       for (const p of partials) {
         const dsReg = await this.getSingleQueryResult(p, LBD.hasDatasetRegistry)
-        console.log('dsReg',p,  dsReg)
         sources.push(dsReg)
       }
     }
@@ -230,8 +232,8 @@ export default class LbdProject {
       q = options.query
     }
 
-    const results = await this.queryEngine.query(q, {sources, fetch: this.fetch})
-    const { data } = await this.queryEngine.resultToString(results,'application/sparql-results+json');
+    const results = await myEngine.query(q, {sources, fetch: this.fetch})
+    const { data } = await myEngine.resultToString(results,'application/sparql-results+json');
     if (options && options.asStream) {
       return data
     } else {
