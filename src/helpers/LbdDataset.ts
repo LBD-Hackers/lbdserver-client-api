@@ -7,7 +7,7 @@ import { AccessRights, ResourceType } from "./BaseDefinitions";
 import LBDService from "./LbdService";
 import {extract} from "./functions"
 import {v4} from "uuid"
-import { ACL, DCAT, FOAF, RDFS } from "@inrupt/vocab-common-rdf";
+import { ACL, DCAT, DCTERMS, FOAF, RDFS } from "@inrupt/vocab-common-rdf";
 import LbdDistribution from './LbdDistribution'
 import { Session as BrowserSession } from "@inrupt/solid-client-authn-browser";
 import { Session as NodeSession} from "@inrupt/solid-client-authn-node";
@@ -80,7 +80,7 @@ export default class LbdDataset {
       }
     }
 
-    let q = `INSERT DATA {<${datasetUrl}> a <${DCAT.Dataset}> . }`
+    let q = `INSERT DATA {<${datasetUrl}> a <${DCAT.Dataset}> ; <${DCTERMS.creator}> <${this.session.info.webId}>. }`
 
     await this.dataService.sparqlUpdate(datasetUrl, q)
     
