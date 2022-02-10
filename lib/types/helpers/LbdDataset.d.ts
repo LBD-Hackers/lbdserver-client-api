@@ -1,7 +1,6 @@
 /// <reference types="node" />
 import AccessService from "./access-service";
 import DataService from "./data-service";
-import { ActorInitSparql } from "@comunica/actor-init-sparql";
 import LBDService from "./LbdService";
 import LbdDistribution from './LbdDistribution';
 import { Session as BrowserSession } from "@inrupt/solid-client-authn-browser";
@@ -15,7 +14,6 @@ export default class LbdDataset {
     url: string;
     data: object[];
     private session;
-    queryEngine: ActorInitSparql;
     constructor(session: BrowserSession | NodeSession, url: string);
     checkExistence(): Promise<boolean>;
     init(): Promise<any>;

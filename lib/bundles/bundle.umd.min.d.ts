@@ -3,7 +3,6 @@ import * as _inrupt_solid_client from '@inrupt/solid-client';
 import * as _inrupt_solid_client_dist_interfaces from '@inrupt/solid-client/dist/interfaces';
 import { Session } from '@inrupt/solid-client-authn-browser';
 import { Session as Session$1 } from '@inrupt/solid-client-authn-node';
-import { ActorInitSparql } from '@comunica/actor-init-sparql';
 
 declare class AccessRights {
     read: boolean;
@@ -190,7 +189,6 @@ declare class LbdConcept {
     concept: string;
     distribution: string;
     private session;
-    queryEngine: ActorInitSparql;
     url: string;
     constructor(session: Session | Session$1, registry: any, id?: string);
     create(): Promise<void>;
@@ -208,7 +206,6 @@ declare class LbdDistribution {
     lbdService: LBDService;
     datasetUrl: string;
     contentType: string;
-    queryEngine: ActorInitSparql;
     url: string;
     data: any;
     private session;
@@ -231,7 +228,6 @@ declare class LbdDataset {
     url: string;
     data: object[];
     private session;
-    queryEngine: ActorInitSparql;
     constructor(session: Session | Session$1, url: string);
     checkExistence(): Promise<boolean>;
     init(): Promise<any>;
@@ -260,7 +256,6 @@ declare class LbdProject {
     accessPoint: string;
     data: object[];
     private session;
-    queryEngine: ActorInitSparql;
     localProject: string;
     constructor(session: Session | Session$1, accessPoint: string, verbose?: boolean);
     checkExistence(): Promise<boolean>;

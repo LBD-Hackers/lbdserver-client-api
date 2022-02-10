@@ -1,7 +1,6 @@
 import AccessService from "./access-service";
 import DataService from "./data-service";
 import LbdConcept from './LbdConcept';
-import { ActorInitSparql } from "@comunica/actor-init-sparql";
 import LbdDataset from "./LbdDataset";
 import { AccessRights } from "./BaseDefinitions";
 import LBDService from "./LbdService";
@@ -17,7 +16,6 @@ export default class LbdProject {
     accessPoint: string;
     data: object[];
     private session;
-    queryEngine: ActorInitSparql;
     localProject: string;
     constructor(session: BrowserSession | NodeSession, accessPoint: string, verbose?: boolean);
     checkExistence(): Promise<boolean>;
