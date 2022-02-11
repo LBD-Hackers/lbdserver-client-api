@@ -9,12 +9,12 @@ export default class LbdDistribution {
     accessService: AccessService;
     dataService: DataService;
     lbdService: LBDService;
-    datasetUrl: string;
     contentType: string;
     url: string;
     data: any;
+    private dataset;
     private session;
-    constructor(session: BrowserSession | NodeSession, url: string);
+    constructor(session: BrowserSession | NodeSession, url: string, dataset: any);
     checkExistence(): Promise<boolean>;
     init(options?: object): Promise<void>;
     getContentType(): Promise<any>;

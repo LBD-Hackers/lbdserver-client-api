@@ -104,7 +104,7 @@ export default class LbdDataset {
   /////////////////////////////////////////////////////////
   public async addDistribution(distribution: File | Buffer, mimetype? ,options: object = {}, distributionId: string = v4(), makePublic: boolean = false) {      
     const distributionUrl = this.url + distributionId    
-    const dist = new LbdDistribution(this.session, distributionUrl)
+    const dist = new LbdDistribution(this.session, distributionUrl, this)
     await dist.create(distribution, {}, mimetype, makePublic)
     await dist.init()
     return dist
@@ -112,13 +112,16 @@ export default class LbdDataset {
 
   public async getDistributions() {
       const dataset = extract(this.data, this.url)
-      const distributionUrls = dataset[DCAT.distribution].map(i => i["@id"])
-      const distributions = []
-      for (const url of distributionUrls) {
-        const dist = new LbdDistribution(this.session, url)
-        distributions.push(dist)
-      }
-      return distributions
+      if (dataset[DCAT.distribution]) {
+        const distributionUrls = dataset[DCAT.distribution].map(i => i["@id"])
+        console.log('distributionUrls', distributionUrls)
+        const distributions = []
+        for (const url of distributionUrls) {
+          const dist = new LbdDistribution(this.session, url, this)
+          distributions.push(dist)
+        }
+        return distributions
+      } else return []
   }
 
   public async deleteDistribution(distributionId: File[]) {

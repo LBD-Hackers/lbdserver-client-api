@@ -11,28 +11,25 @@ import { DCAT, DCTERMS, RDFS } from "@inrupt/vocab-common-rdf";
 import mime from "mime-types"
 import { Session as BrowserSession } from "@inrupt/solid-client-authn-browser";
 import { Session as NodeSession} from "@inrupt/solid-client-authn-node";
+import LbdDataset from "./LbdDataset";
 
 export default class LbdDistribution {
   public fetch;
   public accessService: AccessService;
   public dataService: DataService;
   public lbdService: LBDService;
-  public datasetUrl: string;
   public contentType: string;
-
   public url: string;
   public data: any;
 
+  private dataset: LbdDataset
+
   private session:  BrowserSession | NodeSession
 
-  constructor(session: BrowserSession | NodeSession, url: string) {
-    let datasetUrl = url.split('/')
-    datasetUrl.pop()
-    const ds = datasetUrl.join("/") + '/'
-    
+  constructor(session: BrowserSession | NodeSession, url: string, dataset) {
+    this.dataset = dataset
     this.fetch = session.fetch;
     this.url = url
-    this.datasetUrl = ds
   
     this.accessService = new AccessService(session.fetch);
     this.dataService = new DataService(session.fetch);
@@ -56,18 +53,18 @@ export default class LbdDistribution {
   public async getContentType() {
     const myEngine = newEngine()
     const q0 = `SELECT ?ct where {?id <${DCTERMS.format}> ?ct}`
-    const ct = await myEngine.query(q0, {sources: [this.datasetUrl], fetch: this.fetch}).then((res: any) => res.bindings())
+    const ct = await myEngine.query(q0, {sources: [this.dataset.url], fetch: this.fetch}).then((res: any) => res.bindings())
     if (ct.length > 0) {
       const value = ct[0].get('?ct').value
       this.contentType = value
       return value
     } else {
-      throw new Error(`"Could not find contentType in dataset ${this.datasetUrl}`)
+      throw new Error(`"Could not find contentType in dataset ${this.dataset.url}`)
     }
   } 
 
   public async updateMetadata(query) {
-    await this.dataService.sparqlUpdate(this.datasetUrl, query)
+    await this.dataService.sparqlUpdate(this.dataset.url, query)
   }
 
   public async addAccessUrl(accessUrl) {
@@ -97,19 +94,19 @@ export default class LbdDistribution {
       }
 
       const q = `INSERT DATA {
-        <${this.datasetUrl}> <${DCAT.distribution}> <${this.url}> .
+        <${this.dataset.url}> <${DCAT.distribution}> <${this.url}> .
         <${this.url}> a <${DCAT.Distribution}> ;
             <${DCTERMS.format}> <https://www.iana.org/assignments/media-types/${mimetype}> ;
             <${DCAT.downloadURL}> <${this.url}> .
       }`
-      await this.dataService.sparqlUpdate(this.datasetUrl, q)
+      await this.dataService.sparqlUpdate(this.dataset.url, q)
     if (Object.keys(options).length > 0) {
         let q0 = `INSERT DATA { `
         for (const key of Object.keys(options)) {
-          q0 += `<${this.datasetUrl}> <${key}> "${options[key]}" .`
+          q0 += `<${this.dataset.url}> <${key}> "${options[key]}" .`
         }    
         q0 += "}"
-        await this.dataService.sparqlUpdate(this.datasetUrl, q0)
+        await this.dataService.sparqlUpdate(this.dataset.url, q0)
       }
   }
 
@@ -122,14 +119,14 @@ export default class LbdDistribution {
     } WHERE {
       <${this.url}> ?p ?o .
     }`
-    await myEngine.query(q0, {sources: [this.datasetUrl], fetch: this.fetch})
+    await myEngine.query(q0, {sources: [this.dataset.url], fetch: this.fetch})
 
     const q1 = `DELETE {
       ?s ?p <${this.url}> .
     } WHERE {
       ?s ?p <${this.url}> .
     }`
-    await myEngine.query(q1, {sources: [this.datasetUrl], fetch: this.fetch})
+    await myEngine.query(q1, {sources: [this.dataset.url], fetch: this.fetch})
 
     return
   }
