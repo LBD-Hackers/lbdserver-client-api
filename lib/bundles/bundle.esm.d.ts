@@ -231,6 +231,7 @@ declare class LbdDataset {
     lbdService: LBDService;
     projectId: string;
     url: string;
+    distributions: string[];
     data: object[];
     private session;
     constructor(session: Session | Session$1, url: string);
@@ -247,8 +248,6 @@ declare class LbdDataset {
     delete(): Promise<void>;
     update(query: any): Promise<void>;
     addDistribution(distribution: File | Buffer, mimetype?: any, options?: object, distributionId?: string, makePublic?: boolean): Promise<LbdDistribution>;
-    getDistributionUrls(): Promise<any>;
-    deleteDistribution(distributionId: File[]): Promise<void>;
 }
 
 declare class LbdProject {

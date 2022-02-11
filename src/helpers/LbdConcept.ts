@@ -79,7 +79,6 @@ export default class LbdConcept {
       const idLiteral = this.getIdentifierType(identifier)
       for (const alias  of this.aliases) {
         if (alias.includes(registry)) {
-          console.log('alias, registry', alias, registry)
   
           const q0 = `INSERT DATA {
             <${alias}> <${LBD.hasReference}> <${referenceUrl}> .
@@ -88,7 +87,6 @@ export default class LbdConcept {
             <${identifierUrl}> <http://schema.org/value> ${idLiteral} ;
             <${LBD.inDistribution}> <${distribution}> .
          }`
-         console.log('q0', q0)
          await this.dataService.sparqlUpdate(regdist, q0)
         }
       }
