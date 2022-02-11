@@ -183,7 +183,7 @@ describe("Auth", () => {
   test("can add distribution to dataset", async () => {
     distribution1 = await dataset1.addDistribution(fileUpload1, "model/gltf+json", {}, undefined, true)   
     distribution2 = await dataset2.addDistribution(fileUpload2, "text/turtle", {}, undefined)   
-    expect(distribution1.data).not.toBe(undefined);
+    expect(distribution1.url).not.toBe(undefined);
   })
 
   test("can get content type of distribution", async () => {

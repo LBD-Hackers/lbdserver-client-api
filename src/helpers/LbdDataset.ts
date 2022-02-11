@@ -103,10 +103,8 @@ export default class LbdDataset {
   //////////////////// DISTRIBUTIONS///////////////////////
   /////////////////////////////////////////////////////////
   public async addDistribution(distribution: File | Buffer, mimetype? ,options: object = {}, distributionId: string = v4(), makePublic: boolean = false) {      
-    const distributionUrl = this.url + distributionId    
-    const dist = new LbdDistribution(this.session, distributionUrl, this)
+    const dist = new LbdDistribution(this.session, this, distributionId)
     await dist.create(distribution, {}, mimetype, makePublic)
-    await dist.init()
     return dist
   }
 
@@ -116,7 +114,9 @@ export default class LbdDataset {
         const distributionUrls = dataset[DCAT.distribution].map(i => i["@id"])
         const distributions = []
         for (const url of distributionUrls) {
-          const dist = new LbdDistribution(this.session, url, this)
+          const id = url.split('/')[url.split('/').length -1]
+          console.log('id', id)
+          const dist = new LbdDistribution(this.session, this, id)
           distributions.push(dist)
         }
         return distributions

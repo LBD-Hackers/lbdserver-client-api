@@ -209,15 +209,14 @@ declare class LbdDistribution {
     accessService: AccessService;
     dataService: DataService;
     lbdService: LBDService;
-    contentType: string;
     url: string;
     data: any;
     private dataset;
     private session;
-    constructor(session: Session | Session$1, url: string, dataset: any);
+    constructor(session: Session | Session$1, dataset: any, id?: string);
     checkExistence(): Promise<boolean>;
-    init(options?: object): Promise<void>;
-    getContentType(): Promise<any>;
+    get(options?: object): Promise<void>;
+    getContentType(): any;
     updateMetadata(query: any): Promise<void>;
     addAccessUrl(accessUrl: any): Promise<void>;
     create(file: File | Buffer, options?: object, mimetype?: string, makePublic?: boolean): Promise<void>;

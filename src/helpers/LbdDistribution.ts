@@ -5,7 +5,7 @@ import { newEngine, IQueryResultBindings, ActorInitSparql } from "@comunica/acto
 import LBD from "./vocab/lbd";
 import { AccessRights, ResourceType } from "./BaseDefinitions";
 import LBDService from "./LbdService";
-import {extract} from "jsonld-remote"
+import {extract} from "./functions"
 import {v4} from "uuid"
 import { DCAT, DCTERMS, RDFS } from "@inrupt/vocab-common-rdf";
 import mime from "mime-types"
@@ -18,7 +18,6 @@ export default class LbdDistribution {
   public accessService: AccessService;
   public dataService: DataService;
   public lbdService: LBDService;
-  public contentType: string;
   public url: string;
   public data: any;
 
@@ -26,10 +25,10 @@ export default class LbdDistribution {
 
   private session:  BrowserSession | NodeSession
 
-  constructor(session: BrowserSession | NodeSession, url: string, dataset) {
+  constructor(session: BrowserSession | NodeSession, dataset, id: string = v4()) {
     this.dataset = dataset
     this.fetch = session.fetch;
-    this.url = url
+    this.url = dataset.url + id
   
     this.accessService = new AccessService(session.fetch);
     this.dataService = new DataService(session.fetch);
@@ -45,22 +44,14 @@ export default class LbdDistribution {
     }
   }
 
-  public async init(options: object = {}) {
+  public async get(options: object = {}) {
       this.data = await this.fetch(this.url, options)
-      // this.contentType = await this.getContentType()
   }
+  
+  public getContentType() {
+    const metadata = extract(this.dataset.data, this.url)[DCTERMS.format].map(i => i["@id"])[0]
+    return metadata
 
-  public async getContentType() {
-    const myEngine = newEngine()
-    const q0 = `SELECT ?ct where {?id <${DCTERMS.format}> ?ct}`
-    const ct = await myEngine.query(q0, {sources: [this.dataset.url], fetch: this.fetch}).then((res: any) => res.bindings())
-    if (ct.length > 0) {
-      const value = ct[0].get('?ct').value
-      this.contentType = value
-      return value
-    } else {
-      throw new Error(`"Could not find contentType in dataset ${this.dataset.url}`)
-    }
   } 
 
   public async updateMetadata(query) {
@@ -108,6 +99,8 @@ export default class LbdDistribution {
         q0 += "}"
         await this.dataService.sparqlUpdate(this.dataset.url, q0)
       }
+
+    this.dataset.init()
   }
 
   public async delete() {
