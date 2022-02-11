@@ -110,11 +110,10 @@ export default class LbdDataset {
     return dist
   }
 
-  public async getDistributions() {
+  public getDistributions() {
       const dataset = extract(this.data, this.url)
       if (dataset[DCAT.distribution]) {
         const distributionUrls = dataset[DCAT.distribution].map(i => i["@id"])
-        console.log('distributionUrls', distributionUrls)
         const distributions = []
         for (const url of distributionUrls) {
           const dist = new LbdDistribution(this.session, url, this)

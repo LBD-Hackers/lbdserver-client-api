@@ -29,7 +29,7 @@ export default class LbdDataset {
     delete(): Promise<void>;
     update(query: any): Promise<void>;
     addDistribution(distribution: File | Buffer, mimetype?: any, options?: object, distributionId?: string, makePublic?: boolean): Promise<LbdDistribution>;
-    getDistributions(): Promise<any[]>;
+    getDistributions(): any[];
     deleteDistribution(distributionId: File[]): Promise<void>;
 }
 //# sourceMappingURL=LbdDataset.d.ts.map
