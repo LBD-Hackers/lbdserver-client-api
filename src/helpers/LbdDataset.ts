@@ -19,7 +19,7 @@ export default class LbdDataset {
   public lbdService: LBDService;
   public projectId: string;
   public url: string;
-  public distributions: string[]
+
   public data: object[];
   private session: BrowserSession | NodeSession
 
@@ -42,11 +42,8 @@ export default class LbdDataset {
   }
 
   public async init() {
-    const data = await this.fetch(this.url, {headers: {"Accept": "application/ld+json"}}).then(i => i.json())
-    this.data = data
-    const dataset = extract(this.data, this.url)
-    this.distributions = dataset[DCAT.distribution].map(i => i["@id"])
-
+    this.data = await this.fetch(this.url, {headers: {"Accept": "application/ld+json"}}).then(i => i.json())
+    this.distributions = await this.getDistributions()
     return data
   }
 
@@ -113,5 +110,21 @@ export default class LbdDataset {
     await dist.init()
     return dist
   }
+
+  public async getDistributions() {
+      const dataset = extract(this.data, this.url)
+      const distributionUrls = dataset[DCAT.distribution].map(i => i["@id"])
+      const distributions = []
+      for (const url of distributionUrls) {
+        const dist = new LbdDistribution(this.session, url)
+        distributions.push(dist)
+      }
+      return distributions
+  }
+
+  public async deleteDistribution(distributionId: File[]) {
+
+  }
+
 }
 
