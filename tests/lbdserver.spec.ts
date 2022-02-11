@@ -149,7 +149,6 @@ describe("Auth", () => {
   test("can find all projects of stakeholder", async () => {
     const endpoint = await lbd.getProjectRegistry(session.info.webId)
     const projects = await lbd.getAllProjects(endpoint)
-    console.log('projects', projects);
     expect(projects.length).toBeGreaterThan(0)
   })
 
@@ -189,7 +188,6 @@ describe("Auth", () => {
 
   test("can get content type of distribution", async () => {
     const ct1 = await distribution1.getContentType()
-    console.log('ct1', ct1);
     expect(ct1).toBe("https://www.iana.org/assignments/media-types/model/gltf+json")
   })
 
@@ -200,27 +198,30 @@ describe("Auth", () => {
   test("can create concept", async () => {
     concept = await project.addConcept()
 
-    const q = `ASK {<${concept.url}> a <${LBD.Concept}> .}`
+    const q = `ASK {<${concept.aliases[0]}> a <${LBD.Concept}> .}`
     const subject = extract(project.data, project.localProject)
     const referenceRegistry = subject[LBD.hasReferenceRegistry][0]["@id"] + "data"
     const res = await engine.query(q, {sources: [referenceRegistry], fetch: session.fetch}).then((r:any) => r.booleanResult)
+    engine.invalidateHttpCache()
     expect(res).toBe(true)
   })
 
+  test("can create reference for concept", async () => {
+    reference = await concept.addReference("hello", dataset1.url, distribution1.url)
+    const q = `ASK {<${concept.aliases[0]}> <https://lbdserver.org/vocabulary#hasReference> <${reference}> .}`
+    console.log('q', q)
+    const subject = extract(project.data, project.localProject)
+    const referenceRegistry = subject[LBD.hasReferenceRegistry][0]["@id"] + "data"
+    const text = await session.fetch(referenceRegistry, {headers: {"Accept": "application/ld+json"}}).then(i => i.json())
+    const res = await engine.query(q, {sources: [referenceRegistry], fetch: session.fetch}).then((r:any) => r.booleanResult)
 
+    expect(res).toBe(true)
+  })
 
-  // test("can create reference for concept", async () => {
-  //   reference = await concept.addReference("hello", dataset1.url)
-
-  //   // const q = `ASK {<${concept.url}> <${LBD.hasReference}> <${reference}> .}`
-  //   // console.log('q', q);
-  //   // const subject = extract(project.data, project.localProject)
-  //   // const referenceRegistry = subject[LBD.hasReferenceRegistry][0]["@id"]
-  //   // console.log('referenceRegistry', referenceRegistry);
-  //   // const res = await engine.query(q, {sources: [referenceRegistry], fetch: session.fetch}).then((r:any) => r.booleanResult)
-
-  //   // expect(res).toBe(true)
-  // })
+  test("can retrieve reference by identifier", async () => {
+    const theNewConcept = await project.getConceptByIdentifier("hello", dataset1.url)
+    expect(theNewConcept.initialized).toBe(true)
+  })
 
   // test("can align ttl and gltf", async () => {
   //   await createReferences(project, distribution2.url, distribution1.url, session)
@@ -346,8 +347,8 @@ async function createReferences(project: LbdProject, lbdLocation, gltfLocation, 
           const lbdDataset = lbdLocation.split('/').slice(0, -1).join('/') + '/'
 
           const concept = await project.addConcept()
-          await concept.addReference(element.name, gltfDataset)
-          await concept.addReference(el, lbdDataset)
+          await concept.addReference(element.name, gltfDataset, gltfLocation)
+          await concept.addReference(el, lbdDataset, lbdLocation)
         }
     }
   } 

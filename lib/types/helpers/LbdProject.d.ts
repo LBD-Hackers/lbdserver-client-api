@@ -1,6 +1,6 @@
 import AccessService from "./access-service";
 import DataService from "./data-service";
-import LbdConcept from './LbdConcept';
+import LbdConcept from "./LbdConcept";
 import LbdDataset from "./LbdDataset";
 import { AccessRights } from "./BaseDefinitions";
 import LBDService from "./LbdService";
@@ -38,8 +38,6 @@ export default class LbdProject {
     addDataset(options?: object, makePublic?: boolean, id?: string): Promise<LbdDataset>;
     deleteDataset(datasetUrl: string): Promise<void>;
     deleteDatasetById(datasetId: string): Promise<void>;
-    private getAllPartialProjects;
-    private getSingleQueryResult;
     getAllDatasetUrls(options?: {
         query: string;
         asStream: boolean;
@@ -47,6 +45,7 @@ export default class LbdProject {
     }): Promise<any>;
     addConcept(): Promise<LbdConcept>;
     deleteConcept(url: string): Promise<void>;
+    getConceptByIdentifier(identifier: string, dataset: string, distribution?: string): Promise<LbdConcept>;
     addAlias(): Promise<void>;
     getConcept(): Promise<void>;
     queryProject(): Promise<void>;

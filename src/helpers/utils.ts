@@ -1,4 +1,5 @@
 import * as SparkMD5 from 'spark-md5';
+import { IQueryResultBindings, newEngine } from '@comunica/actor-init-sparql';
 
 export function computeChecksumMd5(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -55,4 +56,15 @@ export function parseStream(stream) {
       resolve(JSON.parse(Buffer.concat(chunks).toString("utf8")))
     });
   });
+}
+
+export async function getQueryResult(source, property, fetch, single: boolean = false) {
+  const myEngine = newEngine()
+  const q = `SELECT ?res WHERE {<${source}> <${property}> ?res}`
+  const bindings = await myEngine.query(q, {sources: [source], fetch}).then((i: IQueryResultBindings) => i.bindings())
+  if (single) {
+    return bindings[0].get("?res").value
+  } else {
+    return bindings.map(i => i.get("?res").value)
+  }
 }

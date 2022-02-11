@@ -11,74 +11,103 @@ import { DCAT, DCTERMS, RDFS, XSD } from "@inrupt/vocab-common-rdf";
 import mime from "mime-types"
 import { Session as BrowserSession } from "@inrupt/solid-client-authn-browser";
 import { Session as NodeSession} from "@inrupt/solid-client-authn-node";
+import LbdProject from "./LbdProject";
+import { getQueryResult } from "./utils";
 
 export default class LbdConcept {
   public fetch;
   public accessService: AccessService;
   public dataService: DataService;
-  public datasetUrl: string;
-  public registry: string;
-  public id: string;
-  public concept: string;
-  public distribution: string; 
-
   private session: BrowserSession | NodeSession
-  public url: string;
+  public references: object[]
+  public aliases: string[]
+  public registry: string
+  public initialized: boolean
 
-  constructor(session: BrowserSession | NodeSession, registry, id: string = v4()) {
-    this.registry = registry;
-    this.distribution = registry + "data"
-    this.id = id;
-    this.url = this.distribution + "#" + this.id
+  constructor(session: BrowserSession | NodeSession, registry) {
+    this.aliases = []
     this.session = session
     this.fetch = session.fetch;
     this.accessService = new AccessService(session.fetch);
     this.dataService = new DataService(session.fetch);
+    this.registry = registry
+    this.references = []
   }
 
   public async create() {
-    const q0 = `INSERT DATA {<${this.url}> a <${LBD.Concept}> }`
-    await this.dataService.sparqlUpdate(this.distribution, q0)
+    const id = v4()
+    const distribution = this.registry + 'data'
+    const url = distribution + "#" + id
+    const q0 = `INSERT DATA {<${url}> a <${LBD.Concept}> }`
+    await this.dataService.sparqlUpdate(distribution, q0)
+    this.aliases.push(url)
+    this.initialized = true
+  }
+
+  public async initialize(data: {aliases: string[], references: {dataset: string, distribution: string, identifier: string}[]}) {
+    this.aliases = data.aliases
+    this.references = data.references
+    this.initialized = true
   }
 
   public async delete() {
-    const q0 = `DELETE {
-      <${this.url}> ?p ?o .
-    } WHERE {
-      <${this.url}> ?p ?o .
-    }`
-    await this.dataService.sparqlUpdate(this.distribution, q0)
-  }
-
-  public async addReference(identifier: string, dataset: string, distribution?: string) {
-    const referenceId = v4()
-    const referenceUrl = this.distribution + "#" + referenceId
-    const identifierId = v4()
-    const identifierUrl = this.distribution + "#" + identifierId
-
-    const {formatted, identifierType} = this.getIdentifierType(identifier)
-
-    const q0 = `INSERT DATA {
-      <${this.url}> <${LBD.hasReference}> <${referenceUrl}> .
-      <${referenceUrl}> <${LBD.inDataset}> <${dataset}> ;
-        <${LBD.hasIdentifier}> <${identifierUrl}> .
-      <${identifierUrl}> a <${identifierType}> ;
-        <${LBD.identifier}> ${formatted} .
-   }`
-    
-    if (distribution) {
-      const q1 = `INSERT DATA {
-        <${identifierUrl}> <${LBD.inDistribution}> <${distribution}> ;
-      }`
+    if (!this.initialized) throw new Error("Please initialize the Concept first using this.initialize() or this.create()")
+    const distribution = this.registry + 'data'
+    for (const alias  of this.aliases) {
+      if (alias.includes(this.registry)) {
+        const q0 = `DELETE {
+          <${alias}> ?p ?o .
+        } WHERE {
+          <${alias}> ?p ?o .
+        }`
+        await this.dataService.sparqlUpdate(distribution, q0)
+      }
     }
 
-    await this.dataService.sparqlUpdate(this.distribution, q0)
-    await this.dataService.sparqlUpdate(this.distribution, q0)
+  }
 
-    return referenceUrl
+  public async addReference(identifier: string, dataset: string, distribution: string) {
+    try {
+      if (!this.initialized) throw new Error("Please initialize the Concept first using this.initialize() or this.create()")
+      const registry = this.registry
+      const referenceId = v4()
+      const regdist = registry + "data"
+      const referenceUrl = regdist + "#" + referenceId
+      const identifierId = v4()
+      const identifierUrl = regdist + "#" + identifierId
+  
+      const idLiteral = this.getIdentifierType(identifier)
+      for (const alias  of this.aliases) {
+        if (alias.includes(registry)) {
+          console.log('alias, registry', alias, registry)
+  
+          const q0 = `INSERT DATA {
+            <${alias}> <${LBD.hasReference}> <${referenceUrl}> .
+            <${referenceUrl}> <${LBD.inDataset}> <${dataset}> ;
+              <${LBD.hasIdentifier}> <${identifierUrl}> .
+            <${identifierUrl}> <http://schema.org/value> ${idLiteral} ;
+            <${LBD.inDistribution}> <${distribution}> .
+         }`
+         console.log('q0', q0)
+         await this.dataService.sparqlUpdate(regdist, q0)
+        }
+      }
+      
+      this.references.push({
+        dataset,
+        distribution,
+        identifier: idLiteral
+      })
+      return referenceUrl
+    } catch (error) {
+      console.log('error', error)
+    }
+
+
   }
 
   public async deleteReference(referenceUrl) {
+    const regdist = this.registry + "data"
     const q0 = `DELETE {
       ?a ?b <${referenceUrl}> .
       <${referenceUrl}> ?p ?o ; ?q ?x.
@@ -89,14 +118,10 @@ export default class LbdConcept {
       ?x ?y ?z.
     }`
     console.log('q0', q0);
-    await this.dataService.sparqlUpdate(this.distribution, q0)
+    await this.dataService.sparqlUpdate(regdist, q0)
 
-    const q1 = `DELETE {<${this.url}> <${LBD.hasReference}> <${referenceUrl}> .}`
-    await this.dataService.sparqlUpdate(this.distribution, q1)
-  }
-
-  public async addAlias() {
-
+    // const q1 = `DELETE {<${this.url}> <${LBD.hasReference}> <${referenceUrl}> .}`
+    // await this.dataService.sparqlUpdate(regdist, q1)
   }
 
   private getIdentifierType(identifier: string | number) {
@@ -105,19 +130,18 @@ export default class LbdConcept {
    }
 
     if (typeof identifier === "string" && identifier.startsWith("http")) {
-      return {formatted: `<${identifier}>`, identifierType: LBD.URIBasedIdentifier}
+      return `"${identifier}"^^<${XSD.anyURI}>`
     } else {
       if (typeof identifier === "number") {
         if (isInt(identifier)) {
-          return {formatted: `"${identifier}"^^<${XSD.integer}>`, identifierType: LBD.StringBasedIdentifier}
+          return `"${identifier}"^^<${XSD.integer}>`
         } else {
-          return {formatted: `"${identifier}"^^<${XSD.float}>`, identifierType: LBD.StringBasedIdentifier}
+          return {formatted: `"${identifier}"^^<${XSD.float}>`}
         }
       } else {
-        return {formatted: `"${identifier}"^^<${XSD.string}>`, identifierType: LBD.StringBasedIdentifier}
+        return `"${identifier}"^^<${XSD.string}>`
       }
     }
   }
-
 }
 

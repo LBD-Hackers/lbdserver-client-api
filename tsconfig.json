@@ -19,6 +19,7 @@
 {
   "compilerOptions": {
     "declaration": true,
+    "downlevelIteration": true,
     "emitDeclarationOnly": true,
     "declarationMap": true,
     "skipLibCheck": true,

@@ -183,19 +183,24 @@ declare class LbdConcept {
     fetch: any;
     accessService: AccessService;
     dataService: DataService;
-    datasetUrl: string;
-    registry: string;
-    id: string;
-    concept: string;
-    distribution: string;
     private session;
-    url: string;
-    constructor(session: Session | Session$1, registry: any, id?: string);
+    references: object[];
+    aliases: string[];
+    registry: string;
+    initialized: boolean;
+    constructor(session: Session | Session$1, registry: any);
     create(): Promise<void>;
+    initialize(data: {
+        aliases: string[];
+        references: {
+            dataset: string;
+            distribution: string;
+            identifier: string;
+        }[];
+    }): Promise<void>;
     delete(): Promise<void>;
-    addReference(identifier: string, dataset: string, distribution?: string): Promise<string>;
+    addReference(identifier: string, dataset: string, distribution: string): Promise<string>;
     deleteReference(referenceUrl: any): Promise<void>;
-    addAlias(): Promise<void>;
     private getIdentifierType;
 }
 
@@ -278,8 +283,6 @@ declare class LbdProject {
     addDataset(options?: object, makePublic?: boolean, id?: string): Promise<LbdDataset>;
     deleteDataset(datasetUrl: string): Promise<void>;
     deleteDatasetById(datasetId: string): Promise<void>;
-    private getAllPartialProjects;
-    private getSingleQueryResult;
     getAllDatasetUrls(options?: {
         query: string;
         asStream: boolean;
@@ -287,6 +290,7 @@ declare class LbdProject {
     }): Promise<any>;
     addConcept(): Promise<LbdConcept>;
     deleteConcept(url: string): Promise<void>;
+    getConceptByIdentifier(identifier: string, dataset: string, distribution?: string): Promise<LbdConcept>;
     addAlias(): Promise<void>;
     getConcept(): Promise<void>;
     queryProject(): Promise<void>;
