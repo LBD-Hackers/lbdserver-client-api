@@ -12,11 +12,12 @@ export default class LbdDataset {
     lbdService: LBDService;
     projectId: string;
     url: string;
+    distributions: LbdDistribution[];
     data: object[];
     private session;
     constructor(session: BrowserSession | NodeSession, url: string);
     checkExistence(): Promise<boolean>;
-    init(): Promise<any>;
+    init(): Promise<void>;
     /**
      *
      * @param makePublic

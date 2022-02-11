@@ -19,7 +19,7 @@ export default class LbdDataset {
   public lbdService: LBDService;
   public projectId: string;
   public url: string;
-
+  public distributions: LbdDistribution[]
   public data: object[];
   private session: BrowserSession | NodeSession
 
@@ -44,7 +44,6 @@ export default class LbdDataset {
   public async init() {
     this.data = await this.fetch(this.url, {headers: {"Accept": "application/ld+json"}}).then(i => i.json())
     this.distributions = await this.getDistributions()
-    return data
   }
 
   /**
