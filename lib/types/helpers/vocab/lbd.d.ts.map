@@ -1,1 +1,1 @@
-{"version":3,"file":"lbd.d.ts","sourceRoot":"","sources":["../../../../src/helpers/vocab/lbd.ts"],"names":[],"mappings":"AAGA,iBAAS,GAAG,CAAE,SAAS,EAAE,MAAM,GAAG,MAAM,CAEvC;AAED,QAAA,MAAM,GAAG;;;;;;;;;;;;;;;;;;;;;;CAwBR,CAAA;AAED,eAAe,GAAG,CAAC"}
+{"version":3,"file":"lbd.d.ts","sourceRoot":"","sources":["../../../../src/helpers/vocab/lbd.ts"],"names":[],"mappings":"AAGA,iBAAS,GAAG,CAAE,SAAS,EAAE,MAAM,GAAG,MAAM,CAEvC;AAED,QAAA,MAAM,GAAG;;;;;;;;;;;;;;;;;;;;;;;;CA2BR,CAAA;AAED,eAAe,GAAG,CAAC"}

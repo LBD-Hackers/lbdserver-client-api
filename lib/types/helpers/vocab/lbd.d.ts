@@ -7,6 +7,7 @@ declare const LBD: {
     };
     NS: typeof _NS;
     Aggregator: string;
+    Project: string;
     Concept: string;
     StringBasedIdentifier: string;
     URIBasedIdentifier: string;
@@ -21,6 +22,7 @@ declare const LBD: {
     hasReferenceRegistry: string;
     hasServiceRegistry: string;
     hasSatellite: string;
+    ProjectInvite: string;
 };
 export default LBD;
 //# sourceMappingURL=lbd.d.ts.map

@@ -12,6 +12,7 @@ const LBD = {
   NS: _NS,
 
   Aggregator: _NS("Aggregator"),
+  Project: _NS("Project"), // add to ontology
   Concept: _NS("Concept"),
   StringBasedIdentifier: _NS("StringBasedIdentifier"),
   URIBasedIdentifier: _NS("URIBasedIdentifier"),
@@ -28,7 +29,9 @@ const LBD = {
   hasDatasetRegistry: _NS("hasDatasetRegistry"),
   hasReferenceRegistry: _NS("hasReferenceRegistry"),
   hasServiceRegistry: _NS("hasServiceRegistry"),
-  hasSatellite: _NS("hasSatellite")
+  hasSatellite: _NS("hasSatellite"),
+
+  ProjectInvite: _NS("ProjectInvite") // add to ontology
 }
 
 export default LBD;

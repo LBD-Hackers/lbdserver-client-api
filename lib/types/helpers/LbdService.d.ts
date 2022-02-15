@@ -12,7 +12,8 @@ export default class LBDService {
     validateWebId(webId: string): Promise<boolean>;
     getAllProjects(aggregator: any): Promise<any>;
     getProjectRegistry(stakeholder: string): Promise<string | undefined>;
-    createProjectRegistry(stakeholder: string, url: string, publiclyAccessible?: boolean): Promise<string>;
+    getInbox(stakeholder: string): Promise<string | undefined>;
+    createProjectRegistry(url?: string, publiclyAccessible?: boolean): Promise<string>;
     removeProjectRegistry(stakeholder: string, url: string): Promise<void>;
 }
 //# sourceMappingURL=LbdService.d.ts.map

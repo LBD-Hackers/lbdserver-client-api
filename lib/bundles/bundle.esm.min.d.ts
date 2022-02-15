@@ -175,7 +175,8 @@ declare class LBDService {
     validateWebId(webId: string): Promise<boolean>;
     getAllProjects(aggregator: any): Promise<any>;
     getProjectRegistry(stakeholder: string): Promise<string | undefined>;
-    createProjectRegistry(stakeholder: string, url: string, publiclyAccessible?: boolean): Promise<string>;
+    getInbox(stakeholder: string): Promise<string | undefined>;
+    createProjectRegistry(url?: string, publiclyAccessible?: boolean): Promise<string>;
     removeProjectRegistry(stakeholder: string, url: string): Promise<void>;
 }
 
@@ -310,6 +311,7 @@ declare namespace LBDserver {
             };
             NS: (localName: string) => string;
             Aggregator: string;
+            Project: string;
             Concept: string;
             StringBasedIdentifier: string;
             URIBasedIdentifier: string;
@@ -324,6 +326,7 @@ declare namespace LBDserver {
             hasReferenceRegistry: string;
             hasServiceRegistry: string;
             hasSatellite: string;
+            ProjectInvite: string;
         };
     };
 }

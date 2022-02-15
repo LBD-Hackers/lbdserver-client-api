@@ -84,7 +84,7 @@ describe("Auth", () => {
 
   test("can create public LBD project Repository in Pod", async () => {
     const url = me.replace("/profile/card#me", "/lbd/");
-    const lbdRes = await lbd.createProjectRegistry(me, url, true);
+    const lbdRes = await lbd.createProjectRegistry();
     const dataset = await getSolidDatasetWithAcl(url, { fetch: session.fetch });
 
     //check public access
@@ -209,7 +209,6 @@ describe("Auth", () => {
   test("can create reference for concept", async () => {
     reference = await concept.addReference("hello", dataset1.url, distribution1.url)
     const q = `ASK {<${concept.aliases[0]}> <${LBD.hasReference}> <${reference}> .}`
-    console.log('q', q)
     const subject = extract(project.data, project.localProject)
     const referenceRegistry = subject[LBD.hasReferenceRegistry][0]["@id"] + "data"
     const text = await session.fetch(referenceRegistry, {headers: {"Accept": "application/ld+json"}}).then(i => i.json())

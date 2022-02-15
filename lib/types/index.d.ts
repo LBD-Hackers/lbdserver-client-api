@@ -16,6 +16,7 @@ export declare namespace LBDserver {
             };
             NS: (localName: string) => string;
             Aggregator: string;
+            Project: string;
             Concept: string;
             StringBasedIdentifier: string;
             URIBasedIdentifier: string;
@@ -30,6 +31,7 @@ export declare namespace LBDserver {
             hasReferenceRegistry: string;
             hasServiceRegistry: string;
             hasSatellite: string;
+            ProjectInvite: string;
         };
     };
 }

@@ -76,7 +76,7 @@ export default class LbdConcept {
       const identifierId = v4()
       const identifierUrl = regdist + "#" + identifierId
   
-      const idLiteral = this.getIdentifierType(identifier)
+      // const idLiteral = this.getIdentifierType(identifier)
       for (const alias  of this.aliases) {
         if (alias.includes(registry)) {
   
@@ -84,7 +84,7 @@ export default class LbdConcept {
             <${alias}> <${LBD.hasReference}> <${referenceUrl}> .
             <${referenceUrl}> <${LBD.inDataset}> <${dataset}> ;
               <${LBD.hasIdentifier}> <${identifierUrl}> .
-            <${identifierUrl}> <http://schema.org/value> ${idLiteral} ;
+            <${identifierUrl}> <http://schema.org/value> "${identifier}" ;
             <${LBD.inDistribution}> <${distribution}> .
          }`
          await this.dataService.sparqlUpdate(regdist, q0)
@@ -94,7 +94,7 @@ export default class LbdConcept {
       this.references.push({
         dataset,
         distribution,
-        identifier: idLiteral
+        identifier
       })
       return referenceUrl
     } catch (error) {
