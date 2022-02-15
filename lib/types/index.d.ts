@@ -12,7 +12,7 @@ export declare namespace LBDserver {
             PREFIX: string;
             NAMESPACE: string;
             PREFIX_AND_NAMESPACE: {
-                lbd: string;
+                lbds: string;
             };
             NS: (localName: string) => string;
             Aggregator: string;

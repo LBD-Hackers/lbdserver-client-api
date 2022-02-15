@@ -115,7 +115,6 @@ export default class LbdConcept {
       <${referenceUrl}> ?p ?o ; ?q ?x.
       ?x ?y ?z.
     }`
-    console.log('q0', q0);
     await this.dataService.sparqlUpdate(regdist, q0)
 
     // const q1 = `DELETE {<${this.url}> <${LBD.hasReference}> <${referenceUrl}> .}`

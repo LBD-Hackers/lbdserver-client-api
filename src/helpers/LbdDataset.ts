@@ -115,7 +115,6 @@ export default class LbdDataset {
         const distributions = []
         for (const url of distributionUrls) {
           const id = url.split('/')[url.split('/').length -1]
-          console.log('id', id)
           const dist = new LbdDistribution(this.session, this, id)
           distributions.push(dist)
         }

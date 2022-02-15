@@ -3,7 +3,7 @@ declare const LBD: {
     PREFIX: string;
     NAMESPACE: string;
     PREFIX_AND_NAMESPACE: {
-        lbd: string;
+        lbds: string;
     };
     NS: typeof _NS;
     Aggregator: string;

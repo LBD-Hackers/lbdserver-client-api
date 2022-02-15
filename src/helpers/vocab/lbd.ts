@@ -1,5 +1,5 @@
-const _NAMESPACE = "https://lbdserver.org/vocabulary#";
-const PREFIX = "lbd"
+const _NAMESPACE = "https://w3id.org/lbdserver#";
+const PREFIX = "lbds"
 
 function _NS (localName: string): string {
   return (_NAMESPACE + localName);

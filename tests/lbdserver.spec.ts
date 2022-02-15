@@ -208,7 +208,7 @@ describe("Auth", () => {
 
   test("can create reference for concept", async () => {
     reference = await concept.addReference("hello", dataset1.url, distribution1.url)
-    const q = `ASK {<${concept.aliases[0]}> <https://lbdserver.org/vocabulary#hasReference> <${reference}> .}`
+    const q = `ASK {<${concept.aliases[0]}> <${LBD.hasReference}> <${reference}> .}`
     console.log('q', q)
     const subject = extract(project.data, project.localProject)
     const referenceRegistry = subject[LBD.hasReferenceRegistry][0]["@id"] + "data"
