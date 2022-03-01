@@ -13,7 +13,7 @@ import {
   getAgentAccess,
 } from "@inrupt/solid-client";
 import {v4} from 'uuid'
-import { LDP, RDF, RDFS } from "@inrupt/vocab-common-rdf";
+import { DCTERMS, LDP, RDF, RDFS, VOID } from "@inrupt/vocab-common-rdf";
 import LbdDataset from "../src/helpers/LbdDataset";
 import LbdDistribution from "../src/helpers/LbdDistribution";
 import fs from "fs"
@@ -175,6 +175,22 @@ describe("Auth", () => {
     expect(dataset1.data).not.toBe(undefined);
   })
 
+  test("can add 20 datasets and distributions to partial project", async () => {
+    const pubStatuses = ["published", "archived", "work-in-progress", "shared"]
+    const labels = ["Architecture", "Heating", "Structural", "Electricity"]
+    const ontologies = ["https://w3id.org/bot#", "https://w3id.org/dot#", "http://pi.pauwel.be/voc/buildingelement#"]
+    for (const index of Array(20)) {
+      const status = pubStatuses[Math.floor(Math.random()*pubStatuses.length)];
+      const ontology1 = ontologies[Math.floor(Math.random()*ontologies.length)];
+      const ontology2 = ontologies[Math.floor(Math.random()*ontologies.length)];
+      const label1 = labels[Math.floor(Math.random()*labels.length)];
+      const label2 = labels[Math.floor(Math.random()*labels.length)];
+      const newDset = await project.addDataset({[RDFS.label]: [label1, label2], [VOID.vocabulary]: [ontology1, ontology2], [RDF.type]: "http://lbd.arch.rwth-aachen.de/bcfOWL#Topic", [DCTERMS.created]: `${new Date()}`}, true)
+      newDset.addDistribution(Buffer.from(`I am the content of ${newDset.url}`))
+    }
+    expect(dataset1.data).not.toBe(undefined);
+  })
+
   test("can get all datasets of a local project", async () => {
     const ds = await project.getAllDatasetUrls()
     expect(ds.length).toBeGreaterThan(0)
@@ -295,7 +311,7 @@ describe("Auth", () => {
 //     const url = me.replace("/profile/card#me", "/lbd/");
 //     const statusBefore = await session.fetch(url).then(res => res.status)
 
-//     const lbdRes = await lbd.removeProjectRegistry(me, url);
+//     const lbdRes = await lbd.removeProjectRegistry(url);
 //     const statusAfter = await session.fetch(url).then(res => res.status)
 //     expect(statusBefore).toBe(200)
 //     expect(statusAfter).toBe(404)

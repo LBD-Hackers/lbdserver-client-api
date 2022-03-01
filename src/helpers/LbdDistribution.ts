@@ -49,7 +49,7 @@ export default class LbdDistribution {
   }
   
   public getContentType() {
-    const metadata = extract(this.dataset.data, this.url)[DCTERMS.format].map(i => i["@id"])[0]
+    const metadata = extract(this.dataset.data, this.url)[DCAT.mediaType].map(i => i["@id"])[0]
     return metadata
 
   } 
@@ -87,7 +87,7 @@ export default class LbdDistribution {
       const q = `INSERT DATA {
         <${this.dataset.url}> <${DCAT.distribution}> <${this.url}> .
         <${this.url}> a <${DCAT.Distribution}> ;
-            <${DCTERMS.format}> <https://www.iana.org/assignments/media-types/${mimetype}> ;
+            <${DCAT.mediaType}> <https://www.iana.org/assignments/media-types/${mimetype}> ;
             <${DCAT.downloadURL}> <${this.url}> .
       }`
       await this.dataService.sparqlUpdate(this.dataset.url, q)

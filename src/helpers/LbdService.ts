@@ -25,6 +25,7 @@ import { Session as BrowserSession } from "@inrupt/solid-client-authn-browser";
 import { Session as NodeSession } from "@inrupt/solid-client-authn-node";
 import { v4 } from "uuid";
 
+
 export default class LBDService {
   public fetch;
   public verbose: boolean = false;
@@ -32,6 +33,12 @@ export default class LBDService {
   public dataService: DataService;
   private session: BrowserSession | NodeSession;
 
+
+  /**
+   * 
+   * @param session an (authenticated) session
+   * @param verbose optional parameter for logging purposes
+   */
   constructor(session: BrowserSession | NodeSession, verbose: boolean = false) {
     this.session = session;
     this.fetch = session.fetch;
@@ -43,6 +50,11 @@ export default class LBDService {
   /////////////////////////////////////////////////////////
   ////////////////////// PREPARATION //////////////////////
   /////////////////////////////////////////////////////////
+  /**
+   * @description This function checks if the card (webId) contains a lbds:hasProjectRegistry pointer
+   * @param webId the webId/card to check
+   * @returns boolean - false: the WebID doesn't have a project registry yet / true: a project registry is mentioned in the card
+   */
   public async validateWebId(webId: string) {
     const lbdLoc = await this.getProjectRegistry(webId);
     if (lbdLoc && lbdLoc.length > 0) {
@@ -51,6 +63,11 @@ export default class LBDService {
     return false;
   }
 
+  /**
+   * @description This function retrieves the LBDserver projects from a project aggregator (e.g. a project registry or public aggregator)
+   * @param aggregator an LBDS aggregator, aggregating projects with lbds:aggregates
+   * @returns Array of LBDserver project access points (URL).
+   */
   public async getAllProjects(aggregator) {
     const data = await this.fetch(aggregator, {
       headers: { Accept: "application/ld+json" },
@@ -61,6 +78,11 @@ export default class LBDService {
     return myProjects;
   }
 
+  /**
+   * @description Find the LBDserver project registry of a specific stakeholder by their WebID.
+   * @param stakeholder The WebID of the stakeholder from whom the project registry should be retrieved
+   * @returns URL of project registry
+   */
   public async getProjectRegistry(
     stakeholder: string
   ): Promise<string | undefined> {
@@ -80,6 +102,11 @@ export default class LBDService {
     }
   }
 
+  /**
+   * @description This function retrieves the LDP inbox from a particular WebID
+   * @param stakeholder The WebID of the stakeholder from whom the LDP inbox should be retrieved
+   * @returns The inbox URL
+   */
   public async getInbox(stakeholder: string): Promise<string | undefined> {
     const myEngine = newEngine();
     const q = `select ?inbox where {<${stakeholder}> <${LDP.inbox}> ?inbox}`;
@@ -121,6 +148,12 @@ export default class LBDService {
 //     // await this.session.fetch()
 //   }
 
+  /**
+   * @description Create an LBDserver project registry
+   * @param url Where the project registry should be created
+   * @param publiclyAccessible Access rights for the project registry
+   * @returns the URL of the LBDserver Project Registry
+   */
   public async createProjectRegistry(
     url: string = undefined,
     publiclyAccessible: boolean = true
@@ -168,12 +201,16 @@ export default class LBDService {
     }
   }
 
-  public async removeProjectRegistry(stakeholder: string, url: string) {
+  /**
+   * @description delete a project registry at a particular location
+   * @param stakeholder The stakeholder (the authenticated agent)
+   * @param url The URL of the project registry
+   */
+  public async removeProjectRegistry(url: string) {
     try {
-      const q0 = `DELETE {<${stakeholder}> <${LBD.hasProjectRegistry}> <${url}> .}
-      WHERE {<${stakeholder}> <${LBD.hasProjectRegistry}> ?reg .}
-      `;
-      await this.dataService.sparqlUpdate(stakeholder, q0);
+      const q0 = `DELETE {<${this.session.info.webId}> <${LBD.hasProjectRegistry}> <${url}> .}
+      WHERE {<${this.session.info.webId}> <${LBD.hasProjectRegistry}> ?reg .}`;
+      await this.dataService.sparqlUpdate(this.session.info.webId, q0);
       await this.dataService.deleteContainer(url, true);
     } catch (error) {
       console.log(`error`, error);

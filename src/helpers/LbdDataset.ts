@@ -58,7 +58,7 @@ export default class LbdDataset {
     makePublic?: boolean,
   ) {
     const datasetUrl = this.url
-
+    const datasetId = this.url.split('/')[this.url.split("/").length - 2]
     const status = await this.fetch(datasetUrl, {method: "HEAD"}).then(res => res.status)
     if (status !== 200) {
       await this.dataService.createContainer(datasetUrl, makePublic)
@@ -75,14 +75,32 @@ export default class LbdDataset {
       }
     }
 
-    let q = `INSERT DATA {<${datasetUrl}> a <${DCAT.Dataset}> ; <${DCTERMS.creator}> <${this.session.info.webId}>. }`
+    let q = `INSERT DATA {<${datasetUrl}> a <${DCAT.Dataset}> ; <${DCTERMS.creator}> <${this.session.info.webId}> ; <${DCTERMS.identifier}> "${datasetId}". }`
 
     await this.dataService.sparqlUpdate(datasetUrl, q)
     
     if (Object.keys(options).length > 0) {
       let q0 = `INSERT DATA { `
       for (const key of Object.keys(options)) {
-        q0 += `<${datasetUrl}> <${key}> "${options[key]}" .`
+        if (Array.isArray(options[key])) {
+          options[key].forEach((item :string) => {
+            let t
+            if (item.startsWith("http")) {
+              t = `<${item}>`
+            } else {
+              t = `"${item}"`
+            }
+            q0 += `<${datasetUrl}> <${key}> ${t} .`
+          })
+        } else {
+          let t
+          if (options[key].startsWith("http")) {
+            t = `<${options[key]}>`
+          } else {
+            t = `"${options[key]}"`
+          }
+          q0 += `<${datasetUrl}> <${key}> ${t} .`
+        }
       }    
       q0 += "}"
       await this.dataService.sparqlUpdate(datasetUrl, q0)

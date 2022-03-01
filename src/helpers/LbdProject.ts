@@ -33,6 +33,12 @@ export default class LbdProject {
   // include queryEngine to allow caching of querydata etc.
   public localProject: string;
 
+  /**
+   * 
+   * @param session an (authenticated) Solid session
+   * @param accessPoint The main accesspoint of the project. This is an aggregator containing the different partial projects of the LBDserver instance
+   * @param verbose optional parameter for logging purposes
+   */
   constructor(
     session: BrowserSession | NodeSession,
     accessPoint: string,
@@ -50,6 +56,10 @@ export default class LbdProject {
     this.lbdService = new LBDService(session);
   }
 
+  /**
+   * @description Checks whether a project with this access point already exists
+   * @returns Boolean: true = the project exists / false = the project doesn't exist
+   */
   public async checkExistence() {
     const status = await this.fetch(this.accessPoint, { method: "HEAD" }).then(
       (result) => result.status
@@ -61,6 +71,9 @@ export default class LbdProject {
     }
   }
 
+  /** 
+   * @description Initialize the project in your application. In short, this adds project metadata to your LbdProject instance
+   */
   public async init() {
     const data = await this.fetch(this.localProject, {
       headers: { Accept: "application/ld+json" },
@@ -69,7 +82,13 @@ export default class LbdProject {
     return data;
   }
 
-  // initialise a project
+
+  /**
+   * @description Create an LBDserver project on your Pod
+   * @param existingPartialProjects optional: if the project is already initialized on other stakeholder pods. Adds the existing partial projects to the Pod-specific access point
+   * @param options Metadata for the project. To be in format {[predicate]: value}
+   * @param makePublic access rights: true = public; false = only the creator
+   */
   public async create(
     existingPartialProjects: string[] = [],
     options: object = {},
@@ -133,6 +152,10 @@ export default class LbdProject {
     await this.init();
   }
 
+  /**
+   * @description Add a partial project to a Pod-specific access point
+   * @param part Partial project to add to a Pod-specific access point
+   */
   public async addPartialProject(part: string) {
     const q0 = `INSERT DATA {
         <${this.accessPoint}> <${LBD.aggregates}> <${part}> .
@@ -140,6 +163,11 @@ export default class LbdProject {
     await this.dataService.sparqlUpdate(this.accessPoint, q0);
   }
 
+  /**
+   * @description Add a stakeholder to an LBDserver project
+   * @param webId The WebID/card of the stakeholder
+   * @param accessRights the access rights this stakeholder should have.
+   */
   public async addStakeholder(
     webId: string,
     accessRights: AccessRights = {
@@ -157,10 +185,16 @@ export default class LbdProject {
     );
   }
 
+  /**
+   * @description delete an LBDserver project (locally)
+   */
   public async delete() {
     await this.dataService.deleteContainer(this.accessPoint, true);
   }
 
+  /**
+   * @description find all the partial projects from the indicated project access point
+   */
   public async findAllPartialProjects() {
     return await getQueryResult(
       this.accessPoint,
@@ -170,6 +204,11 @@ export default class LbdProject {
     );
   }
 
+  /**
+   * @description Find the partial project provided by this stakeholder
+   * @param webId The webID of the stakeholder whom's partial project you want to find
+   * @returns The URL of the partial project
+   */
   public async findPartialProject(webId: string) {
     const repo = await this.lbdService.getProjectRegistry(webId);
     const partialProjectOfStakeholder = repo + this.projectId + "/local/";
@@ -185,6 +224,11 @@ export default class LbdProject {
     }
   }
 
+  /**
+   * @description Add this stakeholder's partial project corresponding with this project (same GUID)
+   * @param webId The webID of the stakeholder whom's partial project you want to add
+   * @returns the URL of the partial project
+   */
   public async addPartialProjectByStakeholder(webId: string) {
     const partialProjectUrl = await this.findPartialProject(webId);
     await this.addPartialProject(partialProjectUrl);
@@ -208,9 +252,9 @@ export default class LbdProject {
   /////////////////////////////////////////////////////////
 
   /**
-   *
-   * @param makePublic
-   * @param id
+   * @description Add a dataset to the project
+   * @param makePublic initial access rights for the dataset
+   * @param id optional id for the dataset - a GUID is created by default
    * @param options Optional - Object containing metadata about the dataset to be created. e.g: {[RDFS.label]: "theLabel"}
    * @returns
    */
@@ -227,12 +271,20 @@ export default class LbdProject {
     return theDataset;
   }
 
+  /**
+   * @description Delete a dataset by URL
+   * @param datasetUrl The URL of the dataset 
+   */
   public async deleteDataset(datasetUrl: string) {
     if (!datasetUrl.endsWith("/")) datasetUrl += "/";
     const ds = new LbdDataset(this.session, datasetUrl);
     await ds.delete();
   }
 
+  /**
+   * @description delete a dataset by its ID
+   * @param datasetId The GUID of the dataset to be deleted
+   */
   public async deleteDatasetById(datasetId: string) {
     const subject = extract(this.data, this.localProject);
     const datasetRegistry = subject[LBD.hasDatasetRegistry][0]["@id"];
@@ -241,6 +293,11 @@ export default class LbdProject {
     await ds.delete();
   }
 
+  /**
+   * @description Get all datasets within this project
+   * @param options {query: query to override, asStream: consume the results as a stream, local: query only the local project}
+   * @returns 
+   */
   public async getAllDatasetUrls(options?: {
     query: string;
     asStream: boolean;
@@ -287,7 +344,10 @@ export default class LbdProject {
   ////////////////////// REFERENCES////////////////////////
   /////////////////////////////////////////////////////////
 
-  // get all references related to a specific abstract Concept
+  /**
+   * @description Add a concept to the local project registry
+   * @returns an LBDconcept Instance
+   */
   public async addConcept(): Promise<LbdConcept> {
     const subject = extract(this.data, this.localProject);
     const referenceRegistry = subject[LBD.hasReferenceRegistry][0]["@id"];
@@ -296,6 +356,10 @@ export default class LbdProject {
     return ref;
   }
 
+  /**
+   * @description delete a concept by ID
+   * @param url the URL of the concept to be deleted
+   */
   public async deleteConcept(url: string) {
     const parts = url.split("/");
     const id = parts.pop();
@@ -304,6 +368,13 @@ export default class LbdProject {
     await ref.delete();
   }
 
+  /**
+   * @description Find the main concept by one of its representations: an identifier and a dataset
+   * @param identifier the Identifier of the representation
+   * @param dataset the dataset where the representation resides
+   * @param distribution (optional) the distribution of the representation
+   * @returns 
+   */
   public async getConceptByIdentifier(
     identifier: string,
     dataset: string,
