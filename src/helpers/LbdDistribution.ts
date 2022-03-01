@@ -25,6 +25,12 @@ export default class LbdDistribution {
 
   private session:  BrowserSession | NodeSession
 
+  /**
+   * 
+   * @param session an (authenticated) Solid session
+   * @param dataset the LbdDataset to which this distribution belongs
+   * @param id (optional) identifier of the distribution (default: GUID)
+   */
   constructor(session: BrowserSession | NodeSession, dataset, id: string = v4()) {
     this.dataset = dataset
     this.fetch = session.fetch;
@@ -35,6 +41,9 @@ export default class LbdDistribution {
     this.lbdService = new LBDService(session);
   }
 
+  /**
+   * Check the existence of this distribution
+   */
   public async checkExistence() {
     const status = await this.fetch(this.url, {method: "HEAD"}).then(result => result.status)
     if (status === 200) {
@@ -44,25 +53,49 @@ export default class LbdDistribution {
     }
   }
 
+  /**
+   * @description Get the distribution's content
+   * @param options Fetch options
+   */
   public async get(options: object = {}) {
       this.data = await this.fetch(this.url, options)
   }
   
+  /**
+   * @description Get the content type of the distribution
+   * @returns contenttype of the distribution
+   */
   public getContentType() {
     const metadata = extract(this.dataset.data, this.url)[DCAT.mediaType].map(i => i["@id"])[0]
     return metadata
 
   } 
 
+
+  /**
+   * @description Update the metadata of the distribution (i.e. its dataset) with a SPARQL query
+   * @param query the SPARQL update
+   */
   public async updateMetadata(query) {
     await this.dataService.sparqlUpdate(this.dataset.url, query)
   }
 
+  /**
+   * @description Add a new dcat:accessURL to the distribution
+   * @param accessUrl Access URL of the distribution (e.g. for a satellite service)
+   */
   public async addAccessUrl(accessUrl) {
     const q0 = `INSERT DATA {<${this.url}> <${DCAT.accessURL}> <${accessUrl}>}`
     await this.updateMetadata(q0)
   }
 
+  /**
+   * @description Create this distribution on a Pod
+   * @param file The file/content of the distribution
+   * @param options Additional metadata to add to the distribution. form:  {[predicate]: value}
+   * @param mimetype optional: the content type of the distribution. If not provided, it will be guessed. If the guess fails, the content type will be text/plain
+   * @param makePublic access rights
+   */
   public async create(
     file: File | Buffer,
     options: object = {},
@@ -103,6 +136,9 @@ export default class LbdDistribution {
     this.dataset.init()
   }
 
+  /**
+   * Delete this distribution
+   */
   public async delete() {
     const myEngine = newEngine()
     await this.dataService.deleteFile(this.url)
