@@ -1,7 +1,7 @@
-import MyLbdService from "./helpers/LbdService"
-import MyLbdProject from "./helpers/LbdProject"
-import MyLbdDataset from "./helpers/LbdDataset";
-import MyLbdDistribution from "./helpers/LbdDistribution";
+import MyLbdService from "./LbdService"
+import MyLbdProject from "./LbdProject"
+import MyLbdDataset from "./LbdDataset";
+import MyLbdDistribution from "./LbdDistribution";
 import LBD from "./helpers/vocab/lbd";
 // export class Consolid{
 
