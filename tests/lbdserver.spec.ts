@@ -4,8 +4,8 @@ import * as path from "path";
 import { createReadStream, readFileSync } from "fs";
 import * as FileAPI from "file-api";
 import { loginCredentials } from "../credentials";
-import LbdService from "../src/helpers/LbdService";
-import LbdProject from "../src/helpers/LbdProject";
+import LbdService from "../src/LbdService";
+import LbdProject from "../src/LbdProject";
 import { AccessRights } from "../src/helpers/BaseDefinitions";
 import {
   getPublicAccess,
@@ -14,11 +14,11 @@ import {
 } from "@inrupt/solid-client";
 import {v4} from 'uuid'
 import { DCTERMS, LDP, RDF, RDFS, VOID } from "@inrupt/vocab-common-rdf";
-import LbdDataset from "../src/helpers/LbdDataset";
-import LbdDistribution from "../src/helpers/LbdDistribution";
+import LbdDataset from "../src/LbdDataset";
+import LbdDistribution from "../src/LbdDistribution";
 import fs from "fs"
 import mime from "mime-types"
-import LbdConcept from "../src/helpers/LbdConcept";
+import LbdConcept from "../src/LbdConcept";
 import LBD from "../src/helpers/vocab/lbd";
 import { IQueryResultBindings, IQueryResultBoolean, newEngine } from "@comunica/actor-init-sparql";
 import { extract } from "../src/helpers/functions"
