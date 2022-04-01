@@ -8,7 +8,7 @@
   "scripts": {
     "prepare": "git stash && npm version patch && git stash pop && npm run build && npm run document && git add . && git commit -m \"publish new version\" && git push",
     "build": "npm-run-all -l clean -p build:esm build:cjs build:bundles declarations",
-    "document": "npx typedoc --out docs src src/LbdDataset.ts src/LbdProject.ts src/LbdService.ts src/LbdDistribution.ts",
+    "document": "npx typedoc --out docs src src/LbdDataset.ts src/LbdProject.ts src/LbdService.ts src/LbdDistribution.ts src/LbdConcept.ts",
     "clean": "rimraf lib",
     "declarations": "tsc -p tsconfig.json",
     "build:bundles": "cross-env BABEL_ENV=esmBundled rollup -c",
