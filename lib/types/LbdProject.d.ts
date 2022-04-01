@@ -104,7 +104,9 @@ export default class LbdProject {
      * @description Add a concept to the local project registry
      * @returns an LBDconcept Instance
      */
-    addConcept(): Promise<LbdConcept>;
+    addConcept(id?: any): Promise<LbdConcept>;
+    getReferenceRegistry(): any;
+    private getAllReferenceRegistries;
     /**
      * @description delete a concept by ID
      * @param url the URL of the concept to be deleted
@@ -118,8 +120,13 @@ export default class LbdProject {
      * @returns
      */
     getConceptByIdentifier(identifier: string, dataset: string, distribution?: string): Promise<LbdConcept>;
-    addAlias(): Promise<void>;
-    getConcept(): Promise<void>;
-    queryProject(): Promise<void>;
+    /**
+     * @description a direct query on project resources
+     * @param q The SPARQL query (string)
+     * @param sources The sources (array)
+     * @param asStream Whether to be consumed as a stream or not (default: false)
+     * @returns
+     */
+    directQuery(q: string, sources: string[], asStream?: boolean): Promise<any>;
 }
 //# sourceMappingURL=LbdProject.d.ts.map

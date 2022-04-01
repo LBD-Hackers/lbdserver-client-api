@@ -17,14 +17,17 @@ import {
   setDatetime,
   saveSolidDatasetAt,
 } from "@inrupt/solid-client";
-import { extract } from "./helpers/functions";
-import { RDF, SCHEMA_INRUPT, DCAT, LDP, AS, XSD, FOAF, DCTERMS } from "@inrupt/vocab-common-rdf";
-import LBD from "./helpers/vocab/lbd";
+import { extract, streamToString } from "./helpers/functions";
+import { RDF, SCHEMA_INRUPT, DCAT, OWL, LDP, AS, XSD, FOAF, DCTERMS } from "@inrupt/vocab-common-rdf";
+import LBD from "./helpers/vocab/lbds";
 import { AccessRights, ResourceType } from "./helpers/BaseDefinitions";
 import { Session as BrowserSession } from "@inrupt/solid-client-authn-browser";
 import { Session as NodeSession } from "@inrupt/solid-client-authn-node";
-import { v4 } from "uuid";
+import { translate, toSparql } from 'sparqlalgebrajs'
+import {Store, DataFactory} from 'n3'
+import { QueryEngine } from "@comunica/query-sparql";
 
+const { namedNode, literal, defaultGraph, quad, variable } = DataFactory;
 
 export default class LBDService {
   public fetch;
@@ -32,6 +35,7 @@ export default class LBDService {
   public accessService: AccessService;
   public dataService: DataService;
   private session: BrowserSession | NodeSession;
+  private store: Store
 
 
   /**
@@ -45,7 +49,107 @@ export default class LBDService {
     this.verbose = verbose;
     this.accessService = new AccessService(session.fetch);
     this.dataService = new DataService(session.fetch);
+    this.store = new Store()
   }
+
+    /////////////////////////////////////////////////////////
+  ////////////////////// QUERY ////////////////////////////
+  /////////////////////////////////////////////////////////
+
+  public async query(q: string, { sources, registries, asStream }) {
+    const { query } = this.mutateQuery(q)
+
+    const myEngine = new QueryEngine();
+
+    await this.inference(myEngine, registries)
+    const result = await myEngine.query(query, { sources: [...sources, this.store], fetch })
+    const { data } = await myEngine.resultToString(result,
+      'application/sparql-results+json');
+    if (asStream) {
+      return data
+    } else {
+      return JSON.parse(await streamToString(data))
+    }
+  }
+
+  private findLowerLevel(obj, variables) {
+    if (!variables) variables = obj.variables
+    if (obj.type === "bgp") {
+      return { bgp: obj, variables }
+    } else {
+      return this.findLowerLevel(obj.input, variables)
+    }
+  }
+
+  private inference(myEngine, registries): Promise<void> {
+    return new Promise(async (resolve, reject) => {
+      const q = `
+      CONSTRUCT {
+       ?s1 <${OWL.sameAs}> ?s2 .
+       ?s2 <${OWL.sameAs}> ?s1 .
+      } WHERE {
+          ?concept1 <${LBD.hasReference}>/<${LBD.hasIdentifier}>/<http://schema.org/value> ?s1 .
+          ?concept2 <${LBD.hasReference}>/<${LBD.hasIdentifier}>/<http://schema.org/value> ?s2 .
+          ?concept1 <${OWL.sameAs}> ?concept2 .
+      }`
+      const quadStream = await myEngine.queryQuads(q, {
+        sources: registries,
+        fetch
+      });
+
+      quadStream.on('data', (res) => {
+        this.store.addQuad(quad(
+          namedNode(res.subject.id.replaceAll('"', '')),
+          namedNode(res.predicate.value),
+          namedNode(res.object.id.replaceAll('"', '')),
+          defaultGraph()
+        ))
+      });
+
+      quadStream.on('end', () => {
+        resolve()
+      })
+    })
+  }
+
+  private mutateQuery(query) {
+    const translation = translate(query);
+    const { bgp, variables } = this.findLowerLevel(translation, translation.variables)
+    const usedVariables = new Set()
+    let aliasNumber = 1
+    let aliases = {}
+    for (const pattern of bgp.patterns) {
+      for (const item of Object.keys(pattern)) {
+        if (pattern[item].termType === "Variable") {
+          if (usedVariables.has(pattern[item])) {
+            const newVName = `${pattern[item].value}_alias${aliasNumber}`
+            if (!aliases[pattern[item].value]) aliases[pattern[item].value] = []
+
+            aliases[pattern[item].value].push(newVName)
+            aliasNumber += 1
+            const newV = { termType: "Variable", value: newVName }
+            pattern[item] = newV
+          }
+          usedVariables.add(pattern[item])
+        }
+
+      }
+    }
+    Object.keys(aliases).forEach(item => {
+      aliases[item].forEach(alias => {
+        const newPattern = quad(
+          variable(item),
+          namedNode("http://www.w3.org/2002/07/owl#sameAs"),
+          variable(alias),
+          defaultGraph()
+        )
+        bgp.patterns.push(newPattern)
+      })
+    })
+    const q: any = { type: "project", input: { type: "bgp", patterns: bgp.patterns }, variables: Array.from(usedVariables) }
+    return { query: toSparql(q), variables: Array.from(usedVariables) }
+  }
+
 
   /////////////////////////////////////////////////////////
   ////////////////////// PREPARATION //////////////////////
