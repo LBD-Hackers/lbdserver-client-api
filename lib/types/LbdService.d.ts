@@ -8,12 +8,21 @@ export default class LBDService {
     accessService: AccessService;
     dataService: DataService;
     private session;
+    private store;
     /**
      *
      * @param session an (authenticated) session
      * @param verbose optional parameter for logging purposes
      */
     constructor(session: BrowserSession | NodeSession, verbose?: boolean);
+    query(q: string, { sources, registries, asStream }: {
+        sources: any;
+        registries: any;
+        asStream: any;
+    }): Promise<any>;
+    private findLowerLevel;
+    private inference;
+    private mutateQuery;
     /**
      * @description This function checks if the card (webId) contains a lbds:hasProjectRegistry pointer
      * @param webId the webId/card to check

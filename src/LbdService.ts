@@ -19,7 +19,7 @@ import {
 } from "@inrupt/solid-client";
 import { extract, streamToString } from "./helpers/functions";
 import { RDF, SCHEMA_INRUPT, DCAT, OWL, LDP, AS, XSD, FOAF, DCTERMS } from "@inrupt/vocab-common-rdf";
-import LBD from "./helpers/vocab/lbd";
+import LBD from "./helpers/vocab/lbds";
 import { AccessRights, ResourceType } from "./helpers/BaseDefinitions";
 import { Session as BrowserSession } from "@inrupt/solid-client-authn-browser";
 import { Session as NodeSession } from "@inrupt/solid-client-authn-node";

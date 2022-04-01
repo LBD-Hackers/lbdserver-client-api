@@ -2,7 +2,7 @@ import AccessService from "./helpers/access-service";
 import DataService from "./helpers/data-service";
 import { newEngine, IQueryResultBindings, ActorInitSparql } from "@comunica/actor-init-sparql";
 
-import LBD from "./helpers/vocab/lbd";
+import LBD from "./helpers/vocab/lbds";
 import { AccessRights, ResourceType } from "./helpers/BaseDefinitions";
 import LBDService from "./LbdService";
 import {extract} from "./helpers/functions"

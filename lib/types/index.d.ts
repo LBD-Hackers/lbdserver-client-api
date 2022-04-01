@@ -2,13 +2,15 @@ import MyLbdService from "./LbdService";
 import MyLbdProject from "./LbdProject";
 import MyLbdDataset from "./LbdDataset";
 import MyLbdDistribution from "./LbdDistribution";
+import MyLbdConcept from './LbdConcept';
 export declare namespace LBDserver {
     const LbdService: typeof MyLbdService;
     const LbdProject: typeof MyLbdProject;
     const LbdDataset: typeof MyLbdDataset;
+    const LbdConcept: typeof MyLbdConcept;
     const LbdDistribution: typeof MyLbdDistribution;
     const vocabulary: {
-        LBD: {
+        LBDS: {
             PREFIX: string;
             NAMESPACE: string;
             PREFIX_AND_NAMESPACE: {

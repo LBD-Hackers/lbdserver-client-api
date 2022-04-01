@@ -88,7 +88,8 @@ export default class DataService{
         redirect: "follow",
     };
     
-        return await this.fetch(fileUrl, requestOptions);
+        const response =  await this.fetch(fileUrl, requestOptions);
+        return response
     }
 
 

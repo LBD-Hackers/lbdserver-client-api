@@ -11,11 +11,11 @@ export default class LbdConcept {
     aliases: string[];
     registry: string;
     initialized: boolean;
-    constructor(session: BrowserSession | NodeSession, registry: any);
+    constructor(session: BrowserSession | NodeSession, registry: string);
     /**
      * create this concept on a project (in a Pod) - asynchronous
      */
-    create(): Promise<void>;
+    create(id?: any): Promise<void>;
     /**
      * @description initialise an already existing concept in your application
      * @param data {aliases: string[], references: {dataset, distribution, identifier}[]
@@ -32,6 +32,7 @@ export default class LbdConcept {
      * @description delete this concept from the reference registry
      */
     delete(): Promise<void>;
+    addAlias(url: any): Promise<void>;
     /**
      * @description Add a reference to this concept
      * @param identifier the identifier

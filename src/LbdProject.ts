@@ -7,10 +7,10 @@ import {
   ActorInitSparql,
 } from "@comunica/actor-init-sparql";
 import LbdDataset from "./LbdDataset";
-import LBD from "./helpers/vocab/lbd";
+import LBD from "./helpers/vocab/lbds";
 import { AccessRights, ResourceType } from "./helpers/BaseDefinitions";
 import LBDService from "./LbdService";
-import { extract } from "./helpers/functions";
+import { extract, query } from "./helpers/functions";
 import { v4 } from "uuid";
 import { ACL, DCAT, DCTERMS, FOAF, OWL } from "@inrupt/vocab-common-rdf";
 import { Session as BrowserSession } from "@inrupt/solid-client-authn-browser";
@@ -211,17 +211,20 @@ export default class LbdProject {
    */
   public async findPartialProject(webId: string) {
     const repo = await this.lbdService.getProjectRegistry(webId);
+    // console.log('repo', repo)
     const partialProjectOfStakeholder = repo + this.projectId + "/local/";
-    const status = await this.fetch(partialProjectOfStakeholder, {
-      method: "HEAD",
-    }).then((res) => res.status);
-    if (status === 200) {
-      return partialProjectOfStakeholder;
-    } else {
-      throw new Error(
-        `UNAUTHORIZED: This repository does not exist or you don't have the required access rights`
-      );
-    }
+    return partialProjectOfStakeholder
+    // console.log('partialProjectOfStakeholder', partialProjectOfStakeholder)
+    // const status = await this.fetch(partialProjectOfStakeholder, {
+    //   method: "HEAD",
+    // }).then((res) => res.status);
+    // if (status === 200) {
+    //   return partialProjectOfStakeholder;
+    // } else {
+    //   throw new Error(
+    //     `UNAUTHORIZED: This repository does not exist or you don't have the required access rights`
+    //   );
+    // }
   }
 
   /**
@@ -348,12 +351,29 @@ export default class LbdProject {
    * @description Add a concept to the local project registry
    * @returns an LBDconcept Instance
    */
-  public async addConcept(): Promise<LbdConcept> {
+  public async addConcept(id?): Promise<LbdConcept> {
     const subject = extract(this.data, this.localProject);
     const referenceRegistry = subject[LBD.hasReferenceRegistry][0]["@id"];
     const ref = new LbdConcept(this.session, referenceRegistry);
-    await ref.create();
+    await ref.create(id);
     return ref;
+  }
+
+  public getReferenceRegistry() {
+    const subject = extract(this.data, this.localProject);
+    return subject[LBD.hasReferenceRegistry][0]["@id"];
+  }
+
+  private async getAllReferenceRegistries() {
+    const partials = await this.findAllPartialProjects()
+    const registries = []
+
+    for (const partial of partials) {
+      const reg = await getQueryResult(partial, LBD.hasReferenceRegistry, this.fetch, true)
+      registries.push(reg + "data")
+    }
+
+    return registries
   }
 
   /**
@@ -470,17 +490,31 @@ export default class LbdProject {
     // -    })
   }
 
-  // register an alias for an existing concept
-  public async addAlias() {}
-
-  // get the abstract Concept related to a dataset/distribution + id
-  public async getConcept() {}
-
   /////////////////////////////////////////////////////////
-  /////////////////////// QUERY ////////////////////////
+  /////////////////////// QUERY ///////////////////////////
   /////////////////////////////////////////////////////////
-  public async queryProject() {
-    // if there is a satellite
-    // if there is no satellite
+
+  /**
+   * @description a direct query on project resources
+   * @param q The SPARQL query (string)
+   * @param sources The sources (array)
+   * @param asStream Whether to be consumed as a stream or not (default: false)
+   * @returns 
+   */
+  public async directQuery(q: string, sources: string[], asStream: boolean = false) {
+    const registries = await this.getAllReferenceRegistries()
+    const results = await query(q, {sources, fetch: this.fetch, asStream, registries})
+    return results
   }
+
+
+  // /**
+  //  * @description A query where datasets take the 
+  //  * @param q 
+  //  * @param datasets 
+  //  * @param asStream 
+  //  */
+  // public async indirectQuery(q: string, datasets: string[], asStream: boolean = false) {
+
+  // }
 }

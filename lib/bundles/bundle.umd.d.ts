@@ -171,12 +171,21 @@ declare class LBDService {
     accessService: AccessService;
     dataService: DataService;
     private session;
+    private store;
     /**
      *
      * @param session an (authenticated) session
      * @param verbose optional parameter for logging purposes
      */
     constructor(session: Session | Session$1, verbose?: boolean);
+    query(q: string, { sources, registries, asStream }: {
+        sources: any;
+        registries: any;
+        asStream: any;
+    }): Promise<any>;
+    private findLowerLevel;
+    private inference;
+    private mutateQuery;
     /**
      * @description This function checks if the card (webId) contains a lbds:hasProjectRegistry pointer
      * @param webId the webId/card to check
@@ -225,11 +234,11 @@ declare class LbdConcept {
     aliases: string[];
     registry: string;
     initialized: boolean;
-    constructor(session: Session | Session$1, registry: any);
+    constructor(session: Session | Session$1, registry: string);
     /**
      * create this concept on a project (in a Pod) - asynchronous
      */
-    create(): Promise<void>;
+    create(id?: any): Promise<void>;
     /**
      * @description initialise an already existing concept in your application
      * @param data {aliases: string[], references: {dataset, distribution, identifier}[]
@@ -246,6 +255,7 @@ declare class LbdConcept {
      * @description delete this concept from the reference registry
      */
     delete(): Promise<void>;
+    addAlias(url: any): Promise<void>;
     /**
      * @description Add a reference to this concept
      * @param identifier the identifier
@@ -467,7 +477,9 @@ declare class LbdProject {
      * @description Add a concept to the local project registry
      * @returns an LBDconcept Instance
      */
-    addConcept(): Promise<LbdConcept>;
+    addConcept(id?: any): Promise<LbdConcept>;
+    getReferenceRegistry(): any;
+    private getAllReferenceRegistries;
     /**
      * @description delete a concept by ID
      * @param url the URL of the concept to be deleted
@@ -481,18 +493,24 @@ declare class LbdProject {
      * @returns
      */
     getConceptByIdentifier(identifier: string, dataset: string, distribution?: string): Promise<LbdConcept>;
-    addAlias(): Promise<void>;
-    getConcept(): Promise<void>;
-    queryProject(): Promise<void>;
+    /**
+     * @description a direct query on project resources
+     * @param q The SPARQL query (string)
+     * @param sources The sources (array)
+     * @param asStream Whether to be consumed as a stream or not (default: false)
+     * @returns
+     */
+    directQuery(q: string, sources: string[], asStream?: boolean): Promise<any>;
 }
 
 declare namespace LBDserver {
     const LbdService: typeof LBDService;
     const LbdProject: typeof LbdProject;
     const LbdDataset: typeof LbdDataset;
+    const LbdConcept: typeof LbdConcept;
     const LbdDistribution: typeof LbdDistribution;
     const vocabulary: {
-        LBD: {
+        LBDS: {
             PREFIX: string;
             NAMESPACE: string;
             PREFIX_AND_NAMESPACE: {
