@@ -6,10 +6,11 @@ You can install this library with `npm install lbdserver-client-api`.
 
 ## Content
 The library exposes four Classes: 
-* LbdService: basic interaction with the Pod (e.g. validate and create LBD project repository)
-* LbdProject: basic interaction with LBDserver projects
-* LbdDataset: basic interaction with datasets of LBDserver projects
-* LbdDistribution: basic interaction with distributions of datasets of LBDserver projects.
+* LbdService: basic LBDserver-oriented interactions with the Pod (e.g. validate and create LBD project repository)
+* LbdProject: interactions with LBDserver projects
+* LbdDataset: interactions with datasets of LBDserver projects
+* LbdConcept: interactions with "abstract concepts", which relate the identifiers from multiple sources
+* LbdDistribution: interactions with distributions of datasets of LBDserver projects.
 
 Further documentation on the functionality of each of these classes is available at [https://lbd-hackers.github.io/lbdserver-client-api/](https://lbd-hackers.github.io/lbdserver-client-api/).
 
