@@ -4,8 +4,8 @@ import * as path from "path";
 import { createReadStream, readFileSync } from "fs";
 import * as FileAPI from "file-api";
 import c from "../configuration";
-import LbdService from "../src/LbdService";
-import LbdProject from "../src/LbdProject";
+import {LbdService} from "../src/LbdService";
+import {LbdProject} from "../src/LbdProject";
 import { AccessRights } from "../src/helpers/BaseDefinitions";
 import {
   getPublicAccess,
@@ -14,11 +14,11 @@ import {
 } from "@inrupt/solid-client";
 import { v4 } from "uuid";
 import { DCTERMS, LDP, RDF, RDFS, VOID } from "@inrupt/vocab-common-rdf";
-import LbdDataset from "../src/LbdDataset";
-import LbdDistribution from "../src/LbdDistribution";
+import {LbdDataset} from "../src/LbdDataset";
+import {LbdDistribution} from "../src/LbdDistribution";
 import fs from "fs";
 import mime from "mime-types";
-import LbdConcept from "../src/LbdConcept";
+import {LbdConcept} from "../src/LbdConcept";
 import LBD from "../src/helpers/vocab/lbds";
 import {
   IQueryResultBindings,
