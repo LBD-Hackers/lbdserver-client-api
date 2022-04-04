@@ -1,11 +1,11 @@
 /// <reference types="node" />
 import AccessService from "./helpers/access-service";
 import DataService from "./helpers/data-service";
-import LbdService from "./LbdService";
-import LbdDistribution from './LbdDistribution';
+import { LbdService } from "./LbdService";
+import { LbdDistribution } from './LbdDistribution';
 import { Session as BrowserSession } from "@inrupt/solid-client-authn-browser";
 import { Session as NodeSession } from "@inrupt/solid-client-authn-node";
-export default class LbdDataset {
+export declare class LbdDataset {
     fetch: any;
     accessService: AccessService;
     dataService: DataService;

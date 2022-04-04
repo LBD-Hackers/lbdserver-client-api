@@ -1,12 +1,12 @@
 import AccessService from "./helpers/access-service";
 import DataService from "./helpers/data-service";
-import LbdConcept from "./LbdConcept";
-import LbdDataset from "./LbdDataset";
+import { LbdConcept } from "./LbdConcept";
+import { LbdDataset } from "./LbdDataset";
 import { AccessRights } from "./helpers/BaseDefinitions";
-import LbdService from "./LbdService";
+import { LbdService } from "./LbdService";
 import { Session as BrowserSession } from "@inrupt/solid-client-authn-browser";
 import { Session as NodeSession } from "@inrupt/solid-client-authn-node";
-export default class LbdProject {
+export declare class LbdProject {
     fetch: any;
     verbose: boolean;
     accessService: AccessService;
@@ -58,7 +58,7 @@ export default class LbdProject {
     /**
      * @description find all the partial projects from the indicated project access point
      */
-    findAllPartialProjects(): Promise<string | string[]>;
+    findAllPartialProjects(): Promise<any>;
     /**
      * @description Find the partial project provided by this stakeholder
      * @param webId The webID of the stakeholder whom's partial project you want to find

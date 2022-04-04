@@ -2,7 +2,7 @@ import AccessService from "./helpers/access-service";
 import DataService from "./helpers/data-service";
 import { Session as BrowserSession } from "@inrupt/solid-client-authn-browser";
 import { Session as NodeSession } from "@inrupt/solid-client-authn-node";
-export default class LbdConcept {
+export declare class LbdConcept {
     fetch: any;
     accessService: AccessService;
     dataService: DataService;

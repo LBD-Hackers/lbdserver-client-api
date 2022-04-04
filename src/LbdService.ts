@@ -1,5 +1,4 @@
 import AccessService from "./helpers/access-service";
-import { urlJoin } from "url-join-ts";
 import DataService from "./helpers/data-service";
 import { computeChecksumMd5 } from "./helpers/utils";
 import { newEngine, IQueryResultBindings } from "@comunica/actor-init-sparql";
