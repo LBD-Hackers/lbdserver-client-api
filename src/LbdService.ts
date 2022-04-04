@@ -62,7 +62,8 @@ export default class LBDService {
     const myEngine = new QueryEngine();
 
     await this.inference(myEngine, registries)
-    const result = await myEngine.query(query, { sources: [...sources, this.store], fetch })
+    const context: any = { sources: [...sources, this.store], fetch }
+    const result = await myEngine.query(query, context )
     const { data } = await myEngine.resultToString(result,
       'application/sparql-results+json');
     if (asStream) {

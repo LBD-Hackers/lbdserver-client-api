@@ -406,7 +406,7 @@ export default class LbdProject {
     const partials = await this.findAllPartialProjects();
     let sources = [];
     for (const p of partials) {
-      const referenceRegistry: string = await getQueryResult(
+      const referenceRegistry = await getQueryResult(
         p,
         LBD.hasReferenceRegistry,
         this.fetch,
@@ -436,7 +436,7 @@ export default class LbdProject {
       OPTIONAL {?concept <${OWL.sameAs}> ?alias}
   }`;
 
-    const aliases = new Set<string>();
+    const aliases = new Set<any>();
     await myEngine
       .query(q, { sources: downloadURLs, fetch: this.fetch })
       .then((r: IQueryResultBindings) => r.bindings())

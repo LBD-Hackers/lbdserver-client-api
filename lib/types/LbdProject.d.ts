@@ -58,7 +58,7 @@ export default class LbdProject {
     /**
      * @description find all the partial projects from the indicated project access point
      */
-    findAllPartialProjects(): Promise<any>;
+    findAllPartialProjects(): Promise<string | string[]>;
     /**
      * @description Find the partial project provided by this stakeholder
      * @param webId The webID of the stakeholder whom's partial project you want to find
