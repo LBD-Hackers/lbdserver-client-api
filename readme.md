@@ -1,5 +1,5 @@
 # LBDserver
-The LBDserver client API provides high-level functionality to manage resources on the LBDserver ecosystem. This ecosystem relies on the Solid specifications for data federation and decentralised identity. The LBDserver is a prototype of a "federated Common Data Environment" (CDE), and is one of the main deliverables of the PhD project of [Jeroen Werbrouck](https://www.researchgate.net/profile/Jeroen-Werbrouck). For more information, please have a look at the papers listed [here](#cite).
+The LBDserver client API provides high-level functionality to manage resources on the LBDserver ecosystem. This ecosystem relies on the Solid specifications for data federation and decentralised identity. The LBDserver is a prototype of a "federated Common Data Environment" (CDE), and is one of the main deliverables of the PhD project of [Jeroen Werbrouck](https://www.researchgate.net/profile/Jeroen-Werbrouck). For more information, please have a look at the papers listed [here](#cite) or at the [WIKI](https://github.com/LBD-Hackers/lbdserver-client-api/wiki).
 
 ## Installation
 You can install this library with `npm install lbdserver-client-api`.
