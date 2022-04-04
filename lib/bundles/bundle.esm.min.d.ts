@@ -165,7 +165,7 @@ declare class DataService {
     }>;
 }
 
-declare class LBDService {
+declare class LbdService {
     fetch: any;
     verbose: boolean;
     accessService: AccessService;
@@ -276,7 +276,7 @@ declare class LbdDistribution {
     fetch: any;
     accessService: AccessService;
     dataService: DataService;
-    lbdService: LBDService;
+    lbdService: LbdService;
     url: string;
     data: any;
     private dataset;
@@ -330,7 +330,7 @@ declare class LbdDataset {
     fetch: any;
     accessService: AccessService;
     dataService: DataService;
-    lbdService: LBDService;
+    lbdService: LbdService;
     projectId: string;
     url: string;
     distributions: LbdDistribution[];
@@ -384,7 +384,7 @@ declare class LbdProject {
     verbose: boolean;
     accessService: AccessService;
     dataService: DataService;
-    lbdService: LBDService;
+    lbdService: LbdService;
     projectId: string;
     accessPoint: string;
     data: object[];
@@ -504,7 +504,7 @@ declare class LbdProject {
 }
 
 declare namespace LBDserver {
-    const LbdService: typeof LBDService;
+    const LbdService: typeof LbdService;
     const LbdProject: typeof LbdProject;
     const LbdDataset: typeof LbdDataset;
     const LbdConcept: typeof LbdConcept;

@@ -29,7 +29,7 @@ import { QueryEngine } from "@comunica/query-sparql";
 
 const { namedNode, literal, defaultGraph, quad, variable } = DataFactory;
 
-export default class LBDService {
+export class LbdService {
   public fetch;
   public verbose: boolean = false;
   public accessService: AccessService;

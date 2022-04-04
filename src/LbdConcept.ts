@@ -4,17 +4,17 @@ import { newEngine, IQueryResultBindings, ActorInitSparql } from "@comunica/acto
 
 import LBD from "./helpers/vocab/lbds";
 import { AccessRights, ResourceType } from "./helpers/BaseDefinitions";
-import LBDService from "./LbdService";
+import {LbdService} from "./LbdService";
 import {extract} from "./helpers/functions"
 import {v4} from "uuid"
 import { DCAT, DCTERMS, OWL, RDFS, XSD } from "@inrupt/vocab-common-rdf";
 import mime from "mime-types"
 import { Session as BrowserSession } from "@inrupt/solid-client-authn-browser";
 import { Session as NodeSession} from "@inrupt/solid-client-authn-node";
-import LbdProject from "./LbdProject";
+import {LbdProject} from "./LbdProject";
 import { getQueryResult } from "./helpers/utils";
 
-export default class LbdConcept {
+export class LbdConcept {
   public fetch;
   public accessService: AccessService;
   public dataService: DataService;

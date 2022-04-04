@@ -4,19 +4,19 @@ import { newEngine, IQueryResultBindings, ActorInitSparql } from "@comunica/acto
 
 import LBD from "./helpers/vocab/lbds";
 import { AccessRights, ResourceType } from "./helpers/BaseDefinitions";
-import LBDService from "./LbdService";
+import {LbdService} from "./LbdService";
 import {extract} from "./helpers/functions"
 import {v4} from "uuid"
 import { ACL, DCAT, DCTERMS, FOAF, RDFS } from "@inrupt/vocab-common-rdf";
-import LbdDistribution from './LbdDistribution'
+import {LbdDistribution} from './LbdDistribution'
 import { Session as BrowserSession } from "@inrupt/solid-client-authn-browser";
 import { Session as NodeSession} from "@inrupt/solid-client-authn-node";
 
-export default class LbdDataset {
+export class LbdDataset {
   public fetch;
   public accessService: AccessService;
   public dataService: DataService;
-  public lbdService: LBDService;
+  public lbdService: LbdService;
   public projectId: string;
   public url: string;
   public distributions: LbdDistribution[]
@@ -29,7 +29,7 @@ export default class LbdDataset {
     this.url = url
     this.accessService = new AccessService(session.fetch);
     this.dataService = new DataService(session.fetch);
-    this.lbdService = new LBDService(session);
+    this.lbdService = new LbdService(session);
   }
 
   /**

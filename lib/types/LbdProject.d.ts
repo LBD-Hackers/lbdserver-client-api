@@ -3,7 +3,7 @@ import DataService from "./helpers/data-service";
 import LbdConcept from "./LbdConcept";
 import LbdDataset from "./LbdDataset";
 import { AccessRights } from "./helpers/BaseDefinitions";
-import LBDService from "./LbdService";
+import LbdService from "./LbdService";
 import { Session as BrowserSession } from "@inrupt/solid-client-authn-browser";
 import { Session as NodeSession } from "@inrupt/solid-client-authn-node";
 export default class LbdProject {
@@ -11,7 +11,7 @@ export default class LbdProject {
     verbose: boolean;
     accessService: AccessService;
     dataService: DataService;
-    lbdService: LBDService;
+    lbdService: LbdService;
     projectId: string;
     accessPoint: string;
     data: object[];

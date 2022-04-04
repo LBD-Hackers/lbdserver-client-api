@@ -1,14 +1,14 @@
 /// <reference types="node" />
 import AccessService from "./helpers/access-service";
 import DataService from "./helpers/data-service";
-import LBDService from "./LbdService";
+import LbdService from "./LbdService";
 import { Session as BrowserSession } from "@inrupt/solid-client-authn-browser";
 import { Session as NodeSession } from "@inrupt/solid-client-authn-node";
 export default class LbdDistribution {
     fetch: any;
     accessService: AccessService;
     dataService: DataService;
-    lbdService: LBDService;
+    lbdService: LbdService;
     url: string;
     data: any;
     private dataset;

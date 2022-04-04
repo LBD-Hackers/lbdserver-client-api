@@ -1,15 +1,15 @@
 import AccessService from "./helpers/access-service";
 import DataService from "./helpers/data-service";
-import LbdConcept from "./LbdConcept";
+import {LbdConcept} from "./LbdConcept";
 import {
   newEngine,
   IQueryResultBindings,
   ActorInitSparql,
 } from "@comunica/actor-init-sparql";
-import LbdDataset from "./LbdDataset";
+import {LbdDataset} from "./LbdDataset";
 import LBD from "./helpers/vocab/lbds";
 import { AccessRights, ResourceType } from "./helpers/BaseDefinitions";
-import LBDService from "./LbdService";
+import {LbdService} from "./LbdService";
 import { extract, query } from "./helpers/functions";
 import { v4 } from "uuid";
 import { ACL, DCAT, DCTERMS, FOAF, OWL } from "@inrupt/vocab-common-rdf";
@@ -18,12 +18,12 @@ import { Session as NodeSession } from "@inrupt/solid-client-authn-node";
 import { LDP } from "@inrupt/vocab-common-rdf";
 import { getQueryResult, parseStream } from "./helpers/utils";
 
-export default class LbdProject {
+export class LbdProject {
   public fetch;
   public verbose: boolean = false;
   public accessService: AccessService;
   public dataService: DataService;
-  public lbdService: LBDService;
+  public lbdService: LbdService;
   public projectId: string;
   public accessPoint: string;
   public data: object[];
@@ -53,7 +53,7 @@ export default class LbdProject {
     this.projectId = accessPoint.split("/")[accessPoint.split("/").length - 2];
     this.accessService = new AccessService(session.fetch);
     this.dataService = new DataService(session.fetch);
-    this.lbdService = new LBDService(session);
+    this.lbdService = new LbdService(session);
   }
 
   /**
