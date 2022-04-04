@@ -32,6 +32,11 @@ const projectId = configuration.projectId;
 const uploadedDatasets = {}
 const uploadedConcepts = {}
 
+
+beforeAll(() => {
+  jest.setTimeout(600000)
+});
+
 for (const [index, stakeholder] of configuration.stakeholders.entries()) {
   var session = new Session();
   const me = stakeholder.webId;
