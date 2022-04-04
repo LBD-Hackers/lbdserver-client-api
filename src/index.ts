@@ -5,11 +5,11 @@ import {LbdDistribution} from "./LbdDistribution";
 import {LbdConcept} from './LbdConcept'
 import LBDS from "./helpers/vocab/lbds";
 
-export namespace LBDserver {
-    LbdService;
-    LbdProject;
-    LbdDataset;
-    LbdConcept;
-    LbdDistribution;
+export {
+    LbdService,
+    LbdProject,
+    LbdDataset,
+    LbdConcept,
+    LbdDistribution,
     LBDS
 }
