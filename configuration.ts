@@ -2,13 +2,14 @@ import { v4 } from "uuid";
 import { RDFS } from "@inrupt/vocab-common-rdf";
 const configuration = {
   projectId: v4(),
+  // projectId: 'test',
   stakeholders: [
     {
       webId: "http://localhost:5000/office1/profile/card#me",
       credentials: {
-        "refreshToken" : "PXSVEL00GVCpVwspP4W9LruBsaegWQ8vdQ6bYwr-fRH",
-        "clientId"     : "qU-yMZYUCWBAdJ1KKiSmj",
-        "clientSecret" : "qk_xuRSDow2KSYbPy9-52p54FUwFCNIwcRMlGu21kDuJ3LGZwEM01ROEe2t81TcNCb5iZ14iMqptBDekz3L1SQ",
+        "refreshToken" : "GCY0oGj0aQHLtejvvUrEJgWurDmhGICSph63IscbmIG",
+        "clientId"     : "rtQTA7SkEBu80vpkU_E51",
+        "clientSecret" : "siQFHretXRRcM8CMCS99Wko2MGtzHWNH3T-UNYX8onQ8IFahDyK1PNsdREw1s71cjA90OjotQyNb9hIkmVjVTg",
         "oidcIssuer"   : "http://localhost:5000/",
       },
       data: [
@@ -19,6 +20,8 @@ const configuration = {
             [RDFS.comment]: "This is the geometry of the duplex project",
           },
           contentType: "model/gltf+json",
+          extract: "gltf",
+          autoAlignmentId: "3154d809-e329-416a-9fce-d0b9415fa4c2",
           align: {
             "0ac53fb9-babd-4a7c-a2fa-c8cd698d70ff": {
               identifiers: ["2O2Fr$t4X7Zf8NOew3FLKI"],
@@ -31,6 +34,7 @@ const configuration = {
             [RDFS.label]: "damage",
             [RDFS.comment]: "These are documented damage descriptions"
           },
+          extract: "subject-object",
           contentType: "text/turtle",
           align: {
             "0ac53fb9-babd-4a7c-a2fa-c8cd698d70ff": {identifiers: ["http://localhost:5000/office1/damages#wall123"]}
@@ -53,9 +57,9 @@ const configuration = {
     {
       webId: "http://localhost:5000/office2/profile/card#me",
       credentials: {
-        "refreshToken" : "4Gf2x9ZBxRiIHwxXBjiv3PtkmR065Qv2eRhmUDjDxak",
-        "clientId"     : "-hehL0RBwSticMSeSKQVI",
-        "clientSecret" : "UFmXFULfMvgQapAJgZDusCNH6J1lKX334yNpfS_GdXB6bmrwoV9-yFz0pPVR2a5htK9emrrl2auc9vDi9kAUbw",
+        "refreshToken" : "096O9hEg-1eNtepl592OBpol9zWL1YIfZxAf8bAcdjO",
+        "clientId"     : "45TsowT-QWAr09MMIp2vE",
+        "clientSecret" : "zgII_aY-osJ_5FnItzgiSvWr7XVo9jzYf2g8u0cty3_bzBNUeRFTiYwwaNXv5U31Aqf489xZCygyHmu_PI8haw",
         "oidcIssuer"   : "http://localhost:5000/",
       },
       data: [
@@ -66,6 +70,8 @@ const configuration = {
             [RDFS.comment]: "This is the semantics of the duplex project",
           },
           contentType: "text/turtle",
+          extract: "ifc-lbd",
+          autoAlignmentId: "3154d809-e329-416a-9fce-d0b9415fa4c2",
           align: {
             "0ac53fb9-babd-4a7c-a2fa-c8cd698d70ff": {
               identifiers: [
@@ -81,6 +87,7 @@ const configuration = {
             [RDFS.comment]: "The thermal semantics of the project",
           },
           contentType: "text/turtle",
+          extract: "subject-object",
           align: {
             "0ac53fb9-babd-4a7c-a2fa-c8cd698d70ff": {
               identifiers: [

@@ -49,14 +49,17 @@ export class LbdConcept {
     this.initialized = true
   }
 
-
   /**
    * @description initialise an already existing concept in your application
    * @param data {aliases: string[], references: {dataset, distribution, identifier}[]
    */
   public init(data: {aliases: string[], references: {dataset: string, distribution: string, identifier: string}[]}) {
     this.aliases = data.aliases
-    this.references = [data.references]
+    if (data.references) {
+      this.references = data.references
+    } else {
+      this.references = []
+    }
     this.initialized = true
   }
 
@@ -79,21 +82,51 @@ export class LbdConcept {
 
   }
 
-  public async addAlias(url) {
-    const registry = this.registry
+  public async addAlias(url, registry) {
+    const proj = new LbdProject(this.session, this.registry.replace("local/references/", ""))
+    const theOtherConcept = await proj.getConcept(url)
+
     for (const alias  of this.aliases) {
       if (alias.includes(registry)) {
 
-        const q0 = `INSERT DATA {
+        let q0 = `INSERT DATA {
           <${alias}> <${OWL.sameAs}> <${url}> .
-       }`
-       await this.dataService.sparqlUpdate(this.registry + "data", q0)
+          `
+        for (const ref of theOtherConcept.references) {
+          if (ref["identifier"].startsWith("http")) {
+            for (const locRef of this.references) {
+              if (locRef["identifier"].startsWith("http")) {
+                q0 += `<${ref["identifier"]}> <${OWL.sameAs}> <${locRef["identifier"]}> .
+                <${locRef["identifier"]}> <${OWL.sameAs}> <${ref["identifier"]}> .`
+              }
+            }
+          }
+        }
+      q0 += "}"
+       await this.dataService.sparqlUpdate(registry + "data", q0)
+
       }
     }
 
     this.aliases.push(url)
     return
   }
+
+  // public async alignLocalAliases(url) {
+  //   const registry = this.registry
+  //   for (const alias  of this.aliases) {
+  //     if (alias.includes(registry)) {
+
+  //       const q0 = `INSERT DATA {
+  //         <${alias}> <${OWL.sameAs}> <${url}> .
+  //      }`
+  //      await this.dataService.sparqlUpdate(this.registry + "data", q0)
+  //     }
+  //   }
+
+  //   this.aliases.push(url)
+  //   return
+  // }
 
   /**
    * @description Add a reference to this concept
@@ -116,13 +149,35 @@ export class LbdConcept {
       for (const alias  of this.aliases) {
         if (alias.includes(registry)) {
   
-          const q0 = `INSERT DATA {
+          let id, alignment
+          alignment = ""
+          if (identifier.startsWith("http")) {
+            id = `<${identifier}>`
+            for (const ref of this.references) {
+              if (ref["identifier"].startsWith("http")) {
+                alignment += `${id} <${OWL.sameAs}> <${ref["identifier"]}> .
+                <${ref["identifier"]}> <${OWL.sameAs}> ${id} .`
+              }
+            }
+
+          }
+          else {
+            id = `"${identifier}"`;
+          }
+
+
+          let q0 = `INSERT DATA {
             <${alias}> <${LBD.hasReference}> <${referenceUrl}> .
             <${referenceUrl}> <${LBD.inDataset}> <${dataset}> ;
               <${LBD.hasIdentifier}> <${identifierUrl}> .
-            <${identifierUrl}> <http://schema.org/value> "${identifier}" ;
+            <${identifierUrl}> <http://schema.org/value> ${id} ;
             <${LBD.inDistribution}> <${distribution}> .
-         }`
+            `
+         if (alignment) {
+           q0 += alignment
+         }
+         q0 += "}"
+
          await this.dataService.sparqlUpdate(regdist, q0)
         }
       }

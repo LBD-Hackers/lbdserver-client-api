@@ -6,24 +6,23 @@ import { AccessRights } from "./helpers/BaseDefinitions";
 import { LbdService } from "./LbdService";
 import { Session as BrowserSession } from "@inrupt/solid-client-authn-browser";
 import { Session as NodeSession } from "@inrupt/solid-client-authn-node";
+import { QueryEngine } from "@comunica/query-sparql";
 export declare class LbdProject {
     fetch: any;
-    verbose: boolean;
     accessService: AccessService;
     dataService: DataService;
     lbdService: LbdService;
     projectId: string;
     accessPoint: string;
     data: object[];
-    private session;
+    session: BrowserSession | NodeSession;
     localProject: string;
     /**
      *
      * @param session an (authenticated) Solid session
      * @param accessPoint The main accesspoint of the project. This is an aggregator containing the different partial projects of the LBDserver instance
-     * @param verbose optional parameter for logging purposes
      */
-    constructor(session: BrowserSession | NodeSession, accessPoint: string, verbose?: boolean);
+    constructor(session: BrowserSession | NodeSession, accessPoint: string);
     /**
      * @description Checks whether a project with this access point already exists
      * @returns Boolean: true = the project exists / false = the project doesn't exist
@@ -106,6 +105,7 @@ export declare class LbdProject {
      */
     addConcept(id?: any): Promise<LbdConcept>;
     getReferenceRegistry(): any;
+    getDatasetRegistry(): any;
     private getAllReferenceRegistries;
     /**
      * @description delete a concept by ID
@@ -119,7 +119,22 @@ export declare class LbdProject {
      * @param distribution (optional) the distribution of the representation
      * @returns
      */
-    getConceptByIdentifier(identifier: string, dataset: string, distribution?: string): Promise<LbdConcept>;
+    getConceptByIdentifier(identifier: string, dataset: string, distribution?: string, options?: {
+        queryEngine: QueryEngine;
+    }): Promise<LbdConcept>;
+    /**
+   * @description Find the main concept by one of its representations: an identifier and a dataset
+   * @param identifier the Identifier of the representation
+   * @param dataset the dataset where the representation resides
+   * @param distribution (optional) the distribution of the representation
+   * @returns
+   */
+    getConceptByIdentifierOld(identifier: string, dataset: string, distribution?: string, options?: {
+        queryEngine: QueryEngine;
+    }): Promise<LbdConcept>;
+    getConcept(url: any, options?: {
+        queryEngine: QueryEngine;
+    }): Promise<LbdConcept>;
     /**
      * @description a direct query on project resources
      * @param q The SPARQL query (string)
@@ -127,6 +142,8 @@ export declare class LbdProject {
      * @param asStream Whether to be consumed as a stream or not (default: false)
      * @returns
      */
-    directQuery(q: string, sources: string[], asStream?: boolean): Promise<any>;
+    directQuery(q: string, sources: string[], options?: {
+        asStream: boolean;
+    }): Promise<any>;
 }
 //# sourceMappingURL=LbdProject.d.ts.map

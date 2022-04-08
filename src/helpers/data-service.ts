@@ -101,7 +101,7 @@ export default class DataService{
 
         // If deleting subcontainers, we need to first get these
         if(includeSubContainers){
-            console.log(`Deleting container ${containerURL} including its subfolders...`);
+            // console.log(`Deleting container ${containerURL} including its subfolders...`);
             const dataset = await getSolidDataset( containerURL, { fetch: this.fetch } );
             const containerResources = await getContainedResourceUrlAll( dataset );
 
@@ -116,7 +116,7 @@ export default class DataService{
             }
         }
 
-        console.log(`Deleting container ${containerURL}...`);
+        // console.log(`Deleting container ${containerURL}...`);
         return deleteContainer( containerURL, { fetch: this.fetch } );
         
     }
