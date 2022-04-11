@@ -332,6 +332,7 @@ export class LbdProject {
       results,
       "application/sparql-results+json"
     );
+    myEngine.invalidateHttpCache()
     if (options && options.asStream) {
       return data;
     } else {
@@ -437,7 +438,7 @@ export class LbdProject {
 
     const results = await myEngine.queryBindings(q, { sources, fetch: this.fetch })
       .then(r => r.toArray())
-
+    myEngine.invalidateHttpCache()
       if (results.length > 0 ) {
         const raw = results[0].get('concept').value
         const theConcept = await this.getConcept(raw)
@@ -626,7 +627,7 @@ export class LbdProject {
 
     const theConcept = new LbdConcept(this.session, conceptRegistry)
     theConcept.init(concept)
-
+    myEngine.invalidateHttpCache()
     return theConcept
   }
 
