@@ -1,4 +1,4 @@
-import configuration from "../configuration";
+import configuration from "../configuration_DC-chair";
 
 
 
@@ -140,12 +140,15 @@ async function autoAlignLbdAndGltf(ttlDataset: LbdDataset, glTFDataset: LbdDatas
         // } else { // lbd and gltf resources are not in the same Pod
 
             // bulk alias adding
-            for (const ttlAlias of ttlConcept.aliases) {
-                for (const gltfAlias of glTFConcept.aliases) {
-                    q_ttl += `<${ttlAlias}> <${OWL.sameAs}> <${gltfAlias}> . \n`
-                    q_gltf += `<${gltfAlias}> <${OWL.sameAs}> <${ttlAlias}> . \n`
+            if (ttlConcept && glTFConcept) {
+                for (const ttlAlias of ttlConcept.aliases) {
+                    for (const gltfAlias of glTFConcept.aliases) {
+                        q_ttl += `<${ttlAlias}> <${OWL.sameAs}> <${gltfAlias}> . \n`
+                        q_gltf += `<${gltfAlias}> <${OWL.sameAs}> <${ttlAlias}> . \n`
+                    }
                 }
             }
+
             // for (const al of lbdConcept.aliases) {
             //     glTFConcept.addAlias(al)
             // }

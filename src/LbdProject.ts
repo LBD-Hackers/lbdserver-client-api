@@ -433,6 +433,7 @@ export class LbdProject {
         <${LBD.hasIdentifier}> ?idUrl .
       ?idUrl <http://schema.org/value> ${id} .
   } LIMIT 1`;
+  
 
     const results = await myEngine.queryBindings(q, { sources, fetch: this.fetch })
       .then(r => r.toArray())
