@@ -14,7 +14,7 @@ export declare class LbdDataset {
     url: string;
     distributions: LbdDistribution[];
     data: object[];
-    private session;
+    session: BrowserSession | NodeSession;
     constructor(session: BrowserSession | NodeSession, url: string);
     /**
      *

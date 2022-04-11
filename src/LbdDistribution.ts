@@ -21,9 +21,9 @@ export class LbdDistribution {
   public url: string;
   public data: any;
 
-  private dataset: LbdDataset
+  public dataset: LbdDataset
 
-  private session:  BrowserSession | NodeSession
+  public session:  BrowserSession | NodeSession
 
   /**
    * 
@@ -33,6 +33,7 @@ export class LbdDistribution {
    */
   constructor(session: BrowserSession | NodeSession, dataset, id: string = v4()) {
     this.dataset = dataset
+    this.session = session
     this.fetch = session.fetch;
     this.url = dataset.url + id
   
@@ -133,7 +134,7 @@ export class LbdDistribution {
         await this.dataService.sparqlUpdate(this.dataset.url, q0)
       }
 
-    this.dataset.init()
+    await this.dataset.init()
   }
 
   /**

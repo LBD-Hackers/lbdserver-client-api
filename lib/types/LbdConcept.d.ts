@@ -32,7 +32,7 @@ export declare class LbdConcept {
      * @description delete this concept from the reference registry
      */
     delete(): Promise<void>;
-    addAlias(url: any): Promise<void>;
+    addAlias(url: any, registry: any): Promise<void>;
     /**
      * @description Add a reference to this concept
      * @param identifier the identifier

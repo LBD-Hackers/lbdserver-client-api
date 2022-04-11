@@ -3,6 +3,7 @@ import * as _inrupt_solid_client from '@inrupt/solid-client';
 import * as _inrupt_solid_client_dist_interfaces from '@inrupt/solid-client/dist/interfaces';
 import { Session } from '@inrupt/solid-client-authn-browser';
 import { Session as Session$1 } from '@inrupt/solid-client-authn-node';
+import { QueryEngine } from '@comunica/query-sparql';
 
 declare class AccessRights {
     read: boolean;
@@ -191,7 +192,7 @@ declare class LbdService {
      * @param webId the webId/card to check
      * @returns boolean - false: the WebID doesn't have a project registry yet / true: a project registry is mentioned in the card
      */
-    validateWebId(webId: string): Promise<boolean>;
+    validateWebId(webId?: string): Promise<boolean>;
     /**
      * @description This function retrieves the LBDserver projects from a project aggregator (e.g. a project registry or public aggregator)
      * @param aggregator an LBDS aggregator, aggregating projects with lbds:aggregates
@@ -203,7 +204,7 @@ declare class LbdService {
      * @param stakeholder The WebID of the stakeholder from whom the project registry should be retrieved
      * @returns URL of project registry
      */
-    getProjectRegistry(stakeholder: string): Promise<string | undefined>;
+    getProjectRegistry(stakeholder?: string): Promise<string | undefined>;
     /**
      * @description This function retrieves the LDP inbox from a particular WebID
      * @param stakeholder The WebID of the stakeholder from whom the LDP inbox should be retrieved
@@ -255,7 +256,7 @@ declare class LbdConcept {
      * @description delete this concept from the reference registry
      */
     delete(): Promise<void>;
-    addAlias(url: any): Promise<void>;
+    addAlias(url: any, registry: any): Promise<void>;
     /**
      * @description Add a reference to this concept
      * @param identifier the identifier
@@ -279,8 +280,8 @@ declare class LbdDistribution {
     lbdService: LbdService;
     url: string;
     data: any;
-    private dataset;
-    private session;
+    dataset: LbdDataset;
+    session: Session | Session$1;
     /**
      *
      * @param session an (authenticated) Solid session
@@ -335,7 +336,7 @@ declare class LbdDataset {
     url: string;
     distributions: LbdDistribution[];
     data: object[];
-    private session;
+    session: Session | Session$1;
     constructor(session: Session | Session$1, url: string);
     /**
      *
@@ -381,22 +382,20 @@ declare class LbdDataset {
 
 declare class LbdProject {
     fetch: any;
-    verbose: boolean;
     accessService: AccessService;
     dataService: DataService;
     lbdService: LbdService;
     projectId: string;
     accessPoint: string;
     data: object[];
-    private session;
+    session: Session | Session$1;
     localProject: string;
     /**
      *
      * @param session an (authenticated) Solid session
      * @param accessPoint The main accesspoint of the project. This is an aggregator containing the different partial projects of the LBDserver instance
-     * @param verbose optional parameter for logging purposes
      */
-    constructor(session: Session | Session$1, accessPoint: string, verbose?: boolean);
+    constructor(session: Session | Session$1, accessPoint: string);
     /**
      * @description Checks whether a project with this access point already exists
      * @returns Boolean: true = the project exists / false = the project doesn't exist
@@ -479,6 +478,7 @@ declare class LbdProject {
      */
     addConcept(id?: any): Promise<LbdConcept>;
     getReferenceRegistry(): any;
+    getDatasetRegistry(): any;
     private getAllReferenceRegistries;
     /**
      * @description delete a concept by ID
@@ -492,7 +492,22 @@ declare class LbdProject {
      * @param distribution (optional) the distribution of the representation
      * @returns
      */
-    getConceptByIdentifier(identifier: string, dataset: string, distribution?: string): Promise<LbdConcept>;
+    getConceptByIdentifier(identifier: string, dataset: string, distribution?: string, options?: {
+        queryEngine: QueryEngine;
+    }): Promise<LbdConcept>;
+    /**
+   * @description Find the main concept by one of its representations: an identifier and a dataset
+   * @param identifier the Identifier of the representation
+   * @param dataset the dataset where the representation resides
+   * @param distribution (optional) the distribution of the representation
+   * @returns
+   */
+    getConceptByIdentifierOld(identifier: string, dataset: string, distribution?: string, options?: {
+        queryEngine: QueryEngine;
+    }): Promise<LbdConcept>;
+    getConcept(url: any, options?: {
+        queryEngine: QueryEngine;
+    }): Promise<LbdConcept>;
     /**
      * @description a direct query on project resources
      * @param q The SPARQL query (string)
@@ -500,7 +515,9 @@ declare class LbdProject {
      * @param asStream Whether to be consumed as a stream or not (default: false)
      * @returns
      */
-    directQuery(q: string, sources: string[], asStream?: boolean): Promise<any>;
+    directQuery(q: string, sources: string[], options?: {
+        asStream: boolean;
+    }): Promise<any>;
 }
 
 declare function _NS(localName: string): string;

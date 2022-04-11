@@ -17,10 +17,10 @@ import { Session as BrowserSession } from "@inrupt/solid-client-authn-browser";
 import { Session as NodeSession } from "@inrupt/solid-client-authn-node";
 import { LDP } from "@inrupt/vocab-common-rdf";
 import { getQueryResult, parseStream } from "./helpers/utils";
+import { QueryEngine } from "@comunica/query-sparql";
 
 export class LbdProject {
   public fetch;
-  public verbose: boolean = false;
   public accessService: AccessService;
   public dataService: DataService;
   public lbdService: LbdService;
@@ -28,7 +28,7 @@ export class LbdProject {
   public accessPoint: string;
   public data: object[];
 
-  private session: BrowserSession | NodeSession;
+  public session: BrowserSession | NodeSession;
 
   // include queryEngine to allow caching of querydata etc.
   public localProject: string;
@@ -37,19 +37,16 @@ export class LbdProject {
    * 
    * @param session an (authenticated) Solid session
    * @param accessPoint The main accesspoint of the project. This is an aggregator containing the different partial projects of the LBDserver instance
-   * @param verbose optional parameter for logging purposes
    */
   constructor(
     session: BrowserSession | NodeSession,
-    accessPoint: string,
-    verbose: boolean = false
-  ) {
+    accessPoint: string
+      ) {
     if (!accessPoint.endsWith("/")) accessPoint += "/";
     this.session = session;
     this.fetch = session.fetch;
     this.accessPoint = accessPoint;
     this.localProject = accessPoint + "local/";
-    this.verbose = verbose;
     this.projectId = accessPoint.split("/")[accessPoint.split("/").length - 2];
     this.accessService = new AccessService(session.fetch);
     this.dataService = new DataService(session.fetch);
@@ -364,6 +361,11 @@ export class LbdProject {
     return subject[LBD.hasReferenceRegistry][0]["@id"];
   }
 
+  public getDatasetRegistry() {
+    const subject = extract(this.data, this.localProject);
+    return subject[LBD.hasDatasetRegistry][0]["@id"];
+  }
+
   private async getAllReferenceRegistries() {
     const partials = await this.findAllPartialProjects()
     const registries = []
@@ -398,9 +400,15 @@ export class LbdProject {
   public async getConceptByIdentifier(
     identifier: string,
     dataset: string,
-    distribution?: string
+    distribution?: string,
+    options?: {queryEngine: QueryEngine}
   ) {
-    const myEngine = newEngine();
+    let myEngine
+    if (options && options.queryEngine) {
+      myEngine = options.queryEngine
+    } else {
+      myEngine = new QueryEngine()
+    }
 
     // find all the reference registries of the aggregated partial projects
     const partials = await this.findAllPartialProjects();
@@ -412,71 +420,33 @@ export class LbdProject {
         this.fetch,
         true
       );
-      const rq = `SELECT ?downloadURL ?dist WHERE {<${referenceRegistry}> <${DCAT.distribution}> ?dist . ?dist <${DCAT.downloadURL}> ?downloadURL . OPTIONAL {?dist <${DCAT.accessURL}> ?accessURL .}}`;
-      const results = await myEngine
-        .query(rq, { sources: [referenceRegistry], fetch: this.fetch })
-        .then((r: IQueryResultBindings) => r.bindings())
-        .then((b) =>
-          b.map((bi) => {
-            return {
-              downloadURL: bi.get("?downloadURL"),
-              accessURL: bi.get("?accessURL"),
-            };
-          })
-        );
-      sources = [...sources, ...results];
+
+      sources.push(referenceRegistry + "data")
     }
 
-    const downloadURLs = sources.map((item) => item.downloadURL.id);
-    const q = `SELECT ?concept ?alias WHERE {
+    let id
+    if (identifier.startsWith("http")) id = `<${identifier}>`
+    else id = `"${identifier}"`
+    const q = `SELECT ?concept WHERE {
       ?concept <${LBD.hasReference}> ?ref .
       ?ref <${LBD.inDataset}> <${dataset}> ;
         <${LBD.hasIdentifier}> ?idUrl .
-      ?idUrl <http://schema.org/value> "${identifier}" .
-      OPTIONAL {?concept <${OWL.sameAs}> ?alias}
-  }`;
+      ?idUrl <http://schema.org/value> ${id} .
+  } LIMIT 1`;
+  
 
-    const aliases = new Set<any>();
-    await myEngine
-      .query(q, { sources: downloadURLs, fetch: this.fetch })
-      .then((r: IQueryResultBindings) => r.bindings())
-      .then((b) =>
-        b.forEach((bi) => {
-          aliases.add(bi.get("?concept").value)
-          if (bi.get("?alias")) aliases.add(bi.get("?alias"));
-        })
-      );
+    const results = await myEngine.queryBindings(q, { sources, fetch: this.fetch })
+      .then(r => r.toArray())
 
-      const concept = {
-        aliases: [],
-        references: [] 
+      if (results.length > 0 ) {
+        const raw = results[0].get('concept').value
+        const theConcept = await this.getConcept(raw)
+        return theConcept
+      } else {
+        return undefined
       }
 
-      for (let v of aliases.values()) {
-        concept.aliases.push(v)
-        const idQ = `SELECT ?dataset ?dist ?identifier WHERE {
-          <${v}> <${LBD.hasReference}> ?ref .
-          ?ref <${LBD.inDataset}> ?dataset ;
-            <${LBD.hasIdentifier}> ?idUrl .
-          ?idUrl <http://schema.org/value> ?identifier ;
-            <${LBD.inDistribution}> ?dist .
-        }`
-        const bindings = await myEngine.query(idQ, {sources: downloadURLs, fetch: this.fetch})
-          .then((response: IQueryResultBindings) => response.bindings())
-        bindings.map(b => {
-          concept.references.push({
-            dataset: b.get("?dataset").value,
-            distribution: b.get("?dist").value,
-            identifier: b.get("?identifier").value
-          })
-      })
-    }
 
-    const subject = extract(this.data, this.localProject);
-    const referenceRegistry = subject[LBD.hasReferenceRegistry][0]["@id"];
-    const theConcept = new LbdConcept(this.session, referenceRegistry)
-    theConcept.init(concept)
-    return theConcept
     //     const aliases = {}
     //     asJson["results"].bindings.forEach(item => {
     //       const alias = item["alias"].value
@@ -490,6 +460,176 @@ export class LbdProject {
     // -    })
   }
 
+    /**
+   * @description Find the main concept by one of its representations: an identifier and a dataset
+   * @param identifier the Identifier of the representation
+   * @param dataset the dataset where the representation resides
+   * @param distribution (optional) the distribution of the representation
+   * @returns 
+   */
+     public async getConceptByIdentifierOld(
+      identifier: string,
+      dataset: string,
+      distribution?: string,
+      options?: {queryEngine: QueryEngine}
+    ) {
+      let myEngine
+      if (options && options.queryEngine) {
+        myEngine = options.queryEngine
+      } else {
+        myEngine = new QueryEngine()
+      }
+  
+      // find all the reference registries of the aggregated partial projects
+      const partials = await this.findAllPartialProjects();
+      let sources = [];
+      for (const p of partials) {
+        const referenceRegistry = await getQueryResult(
+          p,
+          LBD.hasReferenceRegistry,
+          this.fetch,
+          true
+        );
+  
+        const rq = `SELECT ?downloadURL ?dist WHERE {<${referenceRegistry}> <${DCAT.distribution}> ?dist . ?dist <${DCAT.downloadURL}> ?downloadURL . OPTIONAL {?dist <${DCAT.accessURL}> ?accessURL .}}`;
+        const bindingsStream = await myEngine.queryBindings(rq, { sources: [referenceRegistry], fetch: this.fetch })
+        const results = await bindingsStream.toArray()
+        .then(res => res.map(item => {
+          return {
+          downloadURL: item.get("downloadURL").value,
+          accessURL: item.get("accessURL") && item.get("accessURL").value,
+        }}))
+  
+        sources = [...sources, ...results];
+      }
+  
+      const downloadURLs = sources.map((item) => item.downloadURL);
+      let id
+      if (identifier.startsWith("http")) id = `<${identifier}>`
+      else id = `"${identifier}"`
+      const q = `SELECT ?concept ?alias WHERE {
+        ?concept <${LBD.hasReference}> ?ref .
+        ?ref <${LBD.inDataset}> <${dataset}> ;
+          <${LBD.hasIdentifier}> ?idUrl .
+        ?idUrl <http://schema.org/value> ${id} .
+        OPTIONAL {?concept <${OWL.sameAs}> ?alias}
+    }`;
+  
+      const aliases = new Set<any>();
+      await myEngine.queryBindings(q, { sources: downloadURLs, fetch: this.fetch })
+        .then(r => r.toArray())
+        .then(bindings =>
+          bindings.forEach((bi) => {
+            aliases.add(bi.get("concept").value)
+            if (bi.get("alias")) aliases.add(bi.get("alias").value);
+          })
+        );
+  
+        const concept = {
+          aliases: [],
+          references: [] 
+        }
+  
+        for (let v of aliases.values()) {
+          concept.aliases.push(v)
+          const idQ = `SELECT ?dataset ?dist ?identifier WHERE {
+            <${v}> <${LBD.hasReference}> ?ref .
+            ?ref <${LBD.inDataset}> ?dataset ;
+              <${LBD.hasIdentifier}> ?idUrl .
+            ?idUrl <http://schema.org/value> ?identifier ;
+              <${LBD.inDistribution}> ?dist .
+          }`
+          const bindings = await myEngine.queryBindings(idQ, {sources: downloadURLs, fetch: this.fetch}).then(response=> response.toArray())
+          bindings.map(b => {
+            concept.references.push({
+              dataset: b.get("dataset").value,
+              distribution: b.get("dist").value,
+              identifier: b.get("identifier").value
+            })
+        })
+      }
+  
+      const subject = extract(this.data, this.localProject);
+      const referenceRegistry = subject[LBD.hasReferenceRegistry][0]["@id"];
+      const theConcept = new LbdConcept(this.session, referenceRegistry)
+      theConcept.init(concept)
+      return theConcept
+      //     const aliases = {}
+      //     asJson["results"].bindings.forEach(item => {
+      //       const alias = item["alias"].value
+      //       const distribution = item["dist"].value
+      //       const dataset = item["dataset"].value
+      //       const identifier = item["identifier"].value
+  
+      //       if (!Object.keys(aliases).includes(alias)) {
+      //         aliases[alias] = []
+      //       }
+      // -    })
+    }
+
+  public async getConcept(
+    url,
+    options?: {queryEngine: QueryEngine}
+  ) {
+    let myEngine
+    if (options && options.queryEngine) {
+      myEngine = options.queryEngine
+    } else {
+      myEngine = new QueryEngine()
+    }
+
+    const concept = {
+      aliases: [],
+      references: [] 
+    }
+
+    // find all the aliases
+    const conceptRegistry = url.split('#')[0] + ''
+    const q_alias = `SELECT ?alias
+    WHERE {
+      <${url}> <${OWL.sameAs}> ?alias
+    }` 
+
+    const aliases = new Set<string>()
+    aliases.add(url)
+
+    const bindingsStream0 = await myEngine.queryBindings(q_alias, {sources: [conceptRegistry], fetch: this.fetch})
+    await bindingsStream0.toArray().then(res => res.forEach(b => {  
+      aliases.add(b.get('alias').value)
+    }))
+
+    concept.aliases = Array.from(aliases)
+
+    for (const alias of concept.aliases) {
+      const reg = alias.split('#')[0]
+      const q1 = `SELECT ?dataset ?distribution ?id
+      WHERE {
+        <${alias}> a <${LBD.Concept}> ;
+        <${LBD.hasReference}> ?ref .
+        ?ref <${LBD.hasIdentifier}> ?identifier ;
+           <${LBD.inDataset}> ?dataset .
+        ?identifier <${LBD.inDistribution}> ?distribution ;
+            <http://schema.org/value> ?id .  
+      }` 
+  
+  
+      const bindingsStream = await myEngine.queryBindings(q1, {sources: [reg], fetch: this.fetch})
+      await bindingsStream.toArray().then(res => res.forEach(b => {  
+        
+        concept.references.push({
+              dataset: b.get("dataset").value,
+              distribution: b.get("distribution").value,
+              identifier: b.get("id").value
+        })
+      }))
+    }
+
+    const theConcept = new LbdConcept(this.session, conceptRegistry)
+    theConcept.init(concept)
+
+    return theConcept
+  }
+
   /////////////////////////////////////////////////////////
   /////////////////////// QUERY ///////////////////////////
   /////////////////////////////////////////////////////////
@@ -501,9 +641,9 @@ export class LbdProject {
    * @param asStream Whether to be consumed as a stream or not (default: false)
    * @returns 
    */
-  public async directQuery(q: string, sources: string[], asStream: boolean = false) {
+  public async directQuery(q: string, sources: string[], options?: {asStream: boolean}) {
     const registries = await this.getAllReferenceRegistries()
-    const results = await query(q, {sources, fetch: this.fetch, asStream, registries})
+    const results = await query(q, {sources, fetch: this.fetch, registries, ...options})
     return results
   }
 

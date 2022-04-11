@@ -21,7 +21,7 @@ export class LbdDataset {
   public url: string;
   public distributions: LbdDistribution[]
   public data: object[];
-  private session: BrowserSession | NodeSession
+  public session: BrowserSession | NodeSession
 
   constructor(session: BrowserSession | NodeSession, url: string) {
     this.session = session
@@ -50,7 +50,7 @@ export class LbdDataset {
    */
   public async init() {
     this.data = await this.fetch(this.url, {headers: {"Accept": "application/ld+json"}}).then(i => i.json())
-    this.distributions = await this.getDistributions()
+    this.distributions = this.getDistributions()
   }
 
   /**

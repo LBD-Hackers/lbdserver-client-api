@@ -23,7 +23,7 @@ import { AccessRights, ResourceType } from "./helpers/BaseDefinitions";
 import { Session as BrowserSession } from "@inrupt/solid-client-authn-browser";
 import { Session as NodeSession } from "@inrupt/solid-client-authn-node";
 import { translate, toSparql } from 'sparqlalgebrajs'
-import {Store, DataFactory} from 'n3'
+import { Store, DataFactory } from 'n3'
 import { QueryEngine } from "@comunica/query-sparql";
 
 const { namedNode, literal, defaultGraph, quad, variable } = DataFactory;
@@ -51,7 +51,7 @@ export class LbdService {
     this.store = new Store()
   }
 
-    /////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////
   ////////////////////// QUERY ////////////////////////////
   /////////////////////////////////////////////////////////
 
@@ -62,7 +62,7 @@ export class LbdService {
 
     await this.inference(myEngine, registries)
     const context: any = { sources: [...sources, this.store], fetch }
-    const result = await myEngine.query(query, context )
+    const result = await myEngine.query(query, context)
     const { data } = await myEngine.resultToString(result,
       'application/sparql-results+json');
     if (asStream) {
@@ -159,7 +159,9 @@ export class LbdService {
    * @param webId the webId/card to check
    * @returns boolean - false: the WebID doesn't have a project registry yet / true: a project registry is mentioned in the card
    */
-  public async validateWebId(webId: string) {
+  public async validateWebId(webId?: string) {
+    if (!webId) { if (this.session.info.isLoggedIn) { webId = this.session.info.webId } else { throw new Error('No WebID found') } }
+
     const lbdLoc = await this.getProjectRegistry(webId);
     if (lbdLoc && lbdLoc.length > 0) {
       return true;
@@ -188,8 +190,9 @@ export class LbdService {
    * @returns URL of project registry
    */
   public async getProjectRegistry(
-    stakeholder: string
+    stakeholder?: string
   ): Promise<string | undefined> {
+    if (!stakeholder) { if (this.session.info.isLoggedIn) { stakeholder = this.session.info.webId } else { throw new Error('No WebID found') } }
     const myEngine = newEngine();
     const q = `select ?loc where {<${stakeholder}> <${LBD.hasProjectRegistry}> ?loc}`;
     const location = await myEngine
@@ -228,29 +231,29 @@ export class LbdService {
     }
   }
 
-//   public async inviteStakeholder(stakeholder: string, projectId: string) {
-//     const inbox = await this.getInbox(stakeholder);
-//     const id = v4();
-//     const url = inbox + id;
-//     const message = `<>
-//   a <${AS.Announce}> ;
-//   <${AS.actor}> <${this.session.info.webId}> ;
-//   <${AS.object}> <#invite> ;
-//   <${AS.target}> <${stakeholder}> ;
-//   <${AS.updated}> "${new Date().toISOString()}"^^${XSD.dateTime} .
+  //   public async inviteStakeholder(stakeholder: string, projectId: string) {
+  //     const inbox = await this.getInbox(stakeholder);
+  //     const id = v4();
+  //     const url = inbox + id;
+  //     const message = `<>
+  //   a <${AS.Announce}> ;
+  //   <${AS.actor}> <${this.session.info.webId}> ;
+  //   <${AS.object}> <#invite> ;
+  //   <${AS.target}> <${stakeholder}> ;
+  //   <${AS.updated}> "${new Date().toISOString()}"^^${XSD.dateTime} .
 
-// <#invite> a ${LBD.ProjectInvite}; 
-//   <${FOAF.primaryTopic}> <#project> .
-// <#project> a <${LBD.Project}> ;
-//     <${DCTERMS.identifier} "${projectId}" .
-//   `;
+  // <#invite> a ${LBD.ProjectInvite}; 
+  //   <${FOAF.primaryTopic}> <#project> .
+  // <#project> a <${LBD.Project}> ;
+  //     <${DCTERMS.identifier} "${projectId}" .
+  //   `;
 
-//   const options = {
-//     method: "POST",
-//     body: message,
-//   }
-//     // await this.session.fetch()
-//   }
+  //   const options = {
+  //     method: "POST",
+  //     body: message,
+  //   }
+  //     // await this.session.fetch()
+  //   }
 
   /**
    * @description Create an LBDserver project registry
@@ -265,7 +268,7 @@ export class LbdService {
     try {
       const stakeholder = this.session.info.webId
       if (!url) url = stakeholder.replace("/profile/card#me", "/lbd/");
-      
+
       const q0 = `INSERT DATA {
           <${stakeholder}> <${LBD.hasProjectRegistry}> <${url}> .
         }`;

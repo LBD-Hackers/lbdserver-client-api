@@ -1,11 +1,8 @@
-import { LBDserver } from "../src";
 import { Session } from "@inrupt/solid-client-authn-node";
 import * as path from "path";
 import { createReadStream, readFileSync } from "fs";
 import * as FileAPI from "file-api";
 import c from "../configuration";
-import {LbdService} from "../src/LbdService";
-import {LbdProject} from "../src/LbdProject";
 import { AccessRights } from "../src/helpers/BaseDefinitions";
 import {
   getPublicAccess,
@@ -14,11 +11,8 @@ import {
 } from "@inrupt/solid-client";
 import { v4 } from "uuid";
 import { DCTERMS, LDP, RDF, RDFS, VOID } from "@inrupt/vocab-common-rdf";
-import {LbdDataset} from "../src/LbdDataset";
-import {LbdDistribution} from "../src/LbdDistribution";
 import fs from "fs";
 import mime from "mime-types";
-import {LbdConcept} from "../src/LbdConcept";
 import LBD from "../src/helpers/vocab/lbds";
 import {
   IQueryResultBindings,
@@ -26,6 +20,7 @@ import {
   newEngine,
 } from "@comunica/actor-init-sparql";
 import { extract } from "../src/helpers/functions";
+import {LbdConcept, LbdProject, LbdService, LbdDataset, LbdDistribution} from '../src/index'
 
 const configuration = { ...c };
 const projectId = configuration.projectId;
@@ -40,8 +35,8 @@ beforeAll(() => {
 for (const [index, stakeholder] of configuration.stakeholders.entries()) {
   var session = new Session();
   const me = stakeholder.webId;
-  let lbd: LbdService;
-  let project: LbdProject;
+  let lbd;
+  let project;
 
   describe("Preparation: configure stakeholder pods to run LBDserver projects", () => {
     test(`${me} can log in`, async () => {
@@ -177,7 +172,7 @@ for (const [index, stakeholder] of configuration.stakeholders.entries()) {
               concept = await project.addConcept();
               concepts[key] = {};
               concepts[key]["aliases"] = concept.aliases;
-              concepts[key]["references"] = {};
+              concepts[key]["references"] = [];
             } else {
               concept = new LbdConcept(session, project.getReferenceRegistry());
               await concept.init({
@@ -214,8 +209,8 @@ for (const [index, stakeholder] of configuration.stakeholders.entries()) {
 for (const [index, stakeholder] of configuration.stakeholders.entries()) {
   var session = new Session();
   const me = stakeholder.webId;
-  let lbd: LbdService;
-  let project: LbdProject;
+  let lbd;
+  let project;
 
   describe("Interact with existing projects", () => {
     test(`${me} can log in`, async () => {
@@ -237,9 +232,12 @@ for (const [index, stakeholder] of configuration.stakeholders.entries()) {
           for (const key of Object.keys(item.align)) {
                 // find the concept locally
                 const concept = await project.getConceptByIdentifier(item.align[key].identifiers[0], uploadedDatasets[item.path].dataset, uploadedDatasets[item.path].distribution)
+                console.log('item.path', item.path)
+                console.log('concept.references', concept.references)
+                
                 for (const alias of uploadedConcepts[key]) {
                   if (!concept.aliases.includes(alias)) {
-                    await concept.addAlias(alias)
+                    await concept.addAlias(alias, project.getReferenceRegistry())
                   }
                 }
                 for (const alias of uploadedConcepts[key]) {
@@ -257,8 +255,8 @@ describe(`ongoing project tests`, () => {
   const stakeholder = configuration.stakeholders[0]
   var session = new Session();
   const me = stakeholder.webId;
-  let lbd: LbdService;
-  let project: LbdProject;
+  let lbd;
+  let project;
 
   test(`${me} can log in`, async () => {
     await session.login(stakeholder.credentials);
@@ -273,26 +271,32 @@ describe(`ongoing project tests`, () => {
     expect(project.data).not.toBe(undefined)
   });
 
-  test("can query the project", async () => {
-    const sources = []
-    configuration.stakeholders.forEach(st => {
-      st.data.forEach(data => {
-        if (data.contentType === "text/turtle") {
-          sources.push(uploadedDatasets[data.path].distribution)
-        }
-      })
-    })
 
-    const p = `
-    prefix beo: <https://pi.pauwel.be/voc/buildingelement#>
-    prefix dot: <https://w3id.org/dot#>
-    prefix props: <http://example.org/props/>
-    `
-  
-    const q = p + `SELECT ?element WHERE {?element dot:hasDamage ?dam ; a beo:Wall . }`
-
-    const results = await project.directQuery(q, sources)
-
-    expect(results.results.bindings.length > 0).toBe(true)
+  test('can get concept', async () => {
+    const theConcept = await project.getConcept("http://localhost:5000/office2/lbd/test/local/references/data#fc8f6a6c-b3a8-4679-af1c-91c6ad906e1d")
+    console.log('theConcept', theConcept)
   })
+
+  // test("can query the project", async () => {
+  //   const sources = []
+  //   configuration.stakeholders.forEach(st => {
+  //     st.data.forEach(data => {
+  //       if (data.contentType === "text/turtle") {
+  //         sources.push(uploadedDatasets[data.path].distribution)
+  //       }
+  //     })
+  //   })
+
+  //   const p = `
+  //   prefix beo: <https://pi.pauwel.be/voc/buildingelement#>
+  //   prefix dot: <https://w3id.org/dot#>
+  //   prefix props: <http://example.org/props/>
+  //   `
+  
+  //   const q = p + `SELECT ?element WHERE {?element dot:hasDamage ?dam ; a beo:Wall . }`
+
+  //   const results = await project.directQuery(q, sources)
+
+  //   expect(results.results.bindings.length > 0).toBe(true)
+  // })
 })

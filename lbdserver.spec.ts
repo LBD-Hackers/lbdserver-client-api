@@ -367,9 +367,6 @@ async function createReferences(project: LbdProject, lbdLocation, gltfLocation, 
         }
     }
   } 
-
-
-
 }
 
 async function determineLBDpropsLevel(source, session) {

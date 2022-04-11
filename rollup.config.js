@@ -1,5 +1,6 @@
 import babel from '@rollup/plugin-babel';
 import resolve from '@rollup/plugin-node-resolve';
+import nodePolyfills from 'rollup-plugin-polyfill-node';
 import { terser } from "rollup-plugin-terser";
 import commonjs from '@rollup/plugin-commonjs';
 import dts from 'rollup-plugin-dts';
@@ -41,7 +42,8 @@ export default [
       resolve({ extensions }),
       commonjs(),
       json(),
-      babel({babelHelpers: 'bundled', include: ['src/**/*.ts'], extensions, exclude: './node_modules/**'})
+      babel({babelHelpers: 'bundled', include: ['src/**/*.ts'], extensions, exclude: './node_modules/**'}),
+      nodePolyfills({sourceMap: true})
     ]
   },
   {
@@ -53,6 +55,8 @@ export default [
       { file: 'lib/bundles/bundle.umd.d.ts', format: 'es' },
       { file: 'lib/bundles/bundle.umd.min.d.ts', format: 'es' }
     ],
-    plugins: [dts()],
+    plugins: [dts(),
+      nodePolyfills({sourceMap: true})
+    ],
   }
 ]

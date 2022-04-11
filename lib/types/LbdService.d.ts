@@ -28,7 +28,7 @@ export declare class LbdService {
      * @param webId the webId/card to check
      * @returns boolean - false: the WebID doesn't have a project registry yet / true: a project registry is mentioned in the card
      */
-    validateWebId(webId: string): Promise<boolean>;
+    validateWebId(webId?: string): Promise<boolean>;
     /**
      * @description This function retrieves the LBDserver projects from a project aggregator (e.g. a project registry or public aggregator)
      * @param aggregator an LBDS aggregator, aggregating projects with lbds:aggregates
@@ -40,7 +40,7 @@ export declare class LbdService {
      * @param stakeholder The WebID of the stakeholder from whom the project registry should be retrieved
      * @returns URL of project registry
      */
-    getProjectRegistry(stakeholder: string): Promise<string | undefined>;
+    getProjectRegistry(stakeholder?: string): Promise<string | undefined>;
     /**
      * @description This function retrieves the LDP inbox from a particular WebID
      * @param stakeholder The WebID of the stakeholder from whom the LDP inbox should be retrieved

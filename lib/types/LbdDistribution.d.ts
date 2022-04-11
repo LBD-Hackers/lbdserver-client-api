@@ -4,6 +4,7 @@ import DataService from "./helpers/data-service";
 import { LbdService } from "./LbdService";
 import { Session as BrowserSession } from "@inrupt/solid-client-authn-browser";
 import { Session as NodeSession } from "@inrupt/solid-client-authn-node";
+import { LbdDataset } from "./LbdDataset";
 export declare class LbdDistribution {
     fetch: any;
     accessService: AccessService;
@@ -11,8 +12,8 @@ export declare class LbdDistribution {
     lbdService: LbdService;
     url: string;
     data: any;
-    private dataset;
-    private session;
+    dataset: LbdDataset;
+    session: BrowserSession | NodeSession;
     /**
      *
      * @param session an (authenticated) Solid session

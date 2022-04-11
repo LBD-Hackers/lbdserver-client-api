@@ -18,14 +18,19 @@ prefix schema: <http://schema.org/>
 
 function inference(myEngine, { registries, fetch, store }): Promise<void> {
   return new Promise(async (resolve, reject) => {
+    const start = new Date()
       const q = prefixes + `
       CONSTRUCT {
        ?s1 owl:sameAs ?s2 .
        ?s2 owl:sameAs ?s1 .
       } WHERE {
-          ?concept1 lbds:hasReference/lbds:hasIdentifier/<http://schema.org/value> ?s1 .
+          {?concept1 lbds:hasReference/lbds:hasIdentifier/<http://schema.org/value> ?s1 .
           ?concept2 lbds:hasReference/lbds:hasIdentifier/<http://schema.org/value> ?s2 .
-          ?concept1 owl:sameAs ?concept2 .
+          ?concept1 owl:sameAs ?concept2 .} UNION {
+            ?concept1 lbds:hasReference/lbds:hasIdentifier/<http://schema.org/value> ?s1, ?s2 .
+          }
+          FILTER(isIRI(?s1) && isIRI(?s2))
+          FILTER(?s1 != ?s2)
       }`
       const quadStream = await myEngine.queryQuads(q, {
           sources: registries,
@@ -33,18 +38,15 @@ function inference(myEngine, { registries, fetch, store }): Promise<void> {
       });
 
       quadStream.on('data', (res) => {
-
-            const subject = res.subject.id.replaceAll('"', '')
-            const object = res.object.id.replaceAll('"', '')
-          if (subject.startsWith("http") && object.startsWith("http")) {
+        // console.log('res.subject, res.object.id', res.subject.id, res.object.id)
             const q = quad(
-                namedNode(subject),
+                namedNode(res.subject.id),
                 namedNode(res.predicate.value),
-                namedNode(object),
+                namedNode(res.object.id),
                 defaultGraph()
             )
             store.addQuad(q)
-          }
+          
 
       });
 
@@ -53,6 +55,8 @@ function inference(myEngine, { registries, fetch, store }): Promise<void> {
     });
 
       quadStream.on('end', () => {
+        const duration = new Date().getTime() - start.getTime()
+        console.log('duration inference', duration)
           resolve()
       })
   })
@@ -70,18 +74,13 @@ function streamToString (stream): Promise<string> {
 async function query(q, options) {
       let { sources, fetch, store, registries, asStream} = options
       const {query, variables } = await mutateQuery(q)
-    //   const vars = variables.map((v: any) => v.value)
 
-        console.log('sources', sources)
-    console.log('registries', registries)
-    console.log('query', query)
-
-      const newQ = prefixes + "Select * where {?s1 owl:sameAs ?s2} "
+      // const newQ = prefixes + "Select * where {?s1 owl:sameAs ?s2} "
       const myEngine = new QueryEngine();
-      if (!store) store = new N3.Store();
+      // if (!store) store = new N3.Store();
       
-      await inference(myEngine, { registries, fetch, store })
-      const result = await myEngine.query(query, { sources: [...sources, store], fetch })
+      // await inference(myEngine, { registries, fetch, store })
+      const result = await myEngine.query(query, { sources: [...sources, ...registries], fetch })
       const { data } = await myEngine.resultToString(result,
           'application/sparql-results+json');
       if (asStream) {
