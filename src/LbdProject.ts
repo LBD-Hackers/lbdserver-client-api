@@ -432,7 +432,7 @@ export class LbdProject {
       ?concept <${LBD.hasReference}> ?ref .
       ?ref <${LBD.inDataset}> <${dataset}> ;
         <${LBD.hasIdentifier}> ?idUrl .
-      ?idUrl <http://schema.org/value> ${id} .
+      ?idUrl <https://w3id.org/lbdserver#value> ${id} .
   } LIMIT 1`;
   
 
@@ -512,7 +512,7 @@ export class LbdProject {
         ?concept <${LBD.hasReference}> ?ref .
         ?ref <${LBD.inDataset}> <${dataset}> ;
           <${LBD.hasIdentifier}> ?idUrl .
-        ?idUrl <http://schema.org/value> ${id} .
+        ?idUrl <https://w3id.org/lbdserver#value> ${id} .
         OPTIONAL {?concept <${OWL.sameAs}> ?alias}
     }`;
   
@@ -537,7 +537,7 @@ export class LbdProject {
             <${v}> <${LBD.hasReference}> ?ref .
             ?ref <${LBD.inDataset}> ?dataset ;
               <${LBD.hasIdentifier}> ?idUrl .
-            ?idUrl <http://schema.org/value> ?identifier ;
+            ?idUrl <https://w3id.org/lbdserver#value> ?identifier ;
               <${LBD.inDistribution}> ?dist .
           }`
           const bindings = await myEngine.queryBindings(idQ, {sources: downloadURLs, fetch: this.fetch}).then(response=> response.toArray())
@@ -610,7 +610,7 @@ export class LbdProject {
         ?ref <${LBD.hasIdentifier}> ?identifier ;
            <${LBD.inDataset}> ?dataset .
         ?identifier <${LBD.inDistribution}> ?distribution ;
-            <http://schema.org/value> ?id .  
+            <https://w3id.org/lbdserver#value> ?id .  
       }` 
   
   

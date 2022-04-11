@@ -54,7 +54,7 @@ for (const element of elements) {
         <${LBDS.hasReference}> <#${referenceId}> . 
     <#${referenceId}> <${LBDS.inDataset}> <${distribution.dataset.url}> ;
         <${LBDS.hasIdentifier}> <#${identifierId}> .
-    <#${identifierId}> <http://schema.org/value> "${element}" ;
+    <#${identifierId}> <${LBDS.value}> "${element}" ;
     <${LBDS.inDistribution}> <${distribution.url}> .
     ` ;
 }
@@ -76,7 +76,7 @@ async function conceptInsertionBulkLD(elements, distribution, project) {
             <${LBDS.hasReference}> <#${referenceId}> . 
         <#${referenceId}> <${LBDS.inDataset}> <${distribution.dataset.url}> ;
             <${LBDS.hasIdentifier}> <#${identifierId}> .
-        <#${identifierId}> <http://schema.org/value> <${element}> ;
+        <#${identifierId}> <https://w3id.org/lbdserver#value> <${element}> ;
         <${LBDS.inDistribution}> <${distribution.url}> .
         ` ;
     }

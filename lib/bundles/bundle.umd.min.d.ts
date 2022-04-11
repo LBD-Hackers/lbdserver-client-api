@@ -537,7 +537,7 @@ declare const LBDS: {
     inDataset: string;
     inDistribution: string;
     hasIdentifier: string;
-    identifier: string;
+    value: string;
     aggregates: string;
     hasProjectRegistry: string;
     hasDatasetRegistry: string;

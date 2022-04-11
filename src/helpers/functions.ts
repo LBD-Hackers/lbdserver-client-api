@@ -24,10 +24,10 @@ function inference(myEngine, { registries, fetch, store }): Promise<void> {
        ?s1 owl:sameAs ?s2 .
        ?s2 owl:sameAs ?s1 .
       } WHERE {
-          {?concept1 lbds:hasReference/lbds:hasIdentifier/<http://schema.org/value> ?s1 .
-          ?concept2 lbds:hasReference/lbds:hasIdentifier/<http://schema.org/value> ?s2 .
+          {?concept1 lbds:hasReference/lbds:hasIdentifier/<https://w3id.org/lbdserver#value> ?s1 .
+          ?concept2 lbds:hasReference/lbds:hasIdentifier/<https://w3id.org/lbdserver#value> ?s2 .
           ?concept1 owl:sameAs ?concept2 .} UNION {
-            ?concept1 lbds:hasReference/lbds:hasIdentifier/<http://schema.org/value> ?s1, ?s2 .
+            ?concept1 lbds:hasReference/lbds:hasIdentifier/<https://w3id.org/lbdserver#value> ?s1, ?s2 .
           }
           FILTER(isIRI(?s1) && isIRI(?s2))
           FILTER(?s1 != ?s2)

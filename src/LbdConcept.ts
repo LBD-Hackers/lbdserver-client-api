@@ -169,7 +169,7 @@ export class LbdConcept {
             <${alias}> <${LBD.hasReference}> <${referenceUrl}> .
             <${referenceUrl}> <${LBD.inDataset}> <${dataset}> ;
               <${LBD.hasIdentifier}> <${identifierUrl}> .
-            <${identifierUrl}> <http://schema.org/value> ${id} ;
+            <${identifierUrl}> <https://w3id.org/lbdserver#value> ${id} ;
             <${LBD.inDistribution}> <${distribution}> .
             `
          if (alignment) {

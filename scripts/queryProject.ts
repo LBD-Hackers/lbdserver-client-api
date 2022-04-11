@@ -26,8 +26,8 @@ async function run() {
     prefix bot:   <https://w3id.org/bot#>
     `
     // const query = p + `SELECT ?el1 ?el2 ?uv WHERE {
-    //     ?concept <${LBDS.hasReference}>/<${LBDS.hasIdentifier}>/<http://schema.org/value> ?el1 .
-    //     ?concept <${LBDS.hasReference}>/<${LBDS.hasIdentifier}>/<http://schema.org/value> ?el2 .
+    //     ?concept <${LBDS.hasReference}>/<${LBDS.hasIdentifier}>/<https://w3id.org/lbdserver#value> ?el1 .
+    //     ?concept <${LBDS.hasReference}>/<${LBDS.hasIdentifier}>/<https://w3id.org/lbdserver#value> ?el2 .
     //     ?el1 dot:hasDamage ?uv .
     //     ?el2 a beo:Wall .
     // }`

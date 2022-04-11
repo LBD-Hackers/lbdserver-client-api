@@ -21,7 +21,7 @@ const LBDS = {
   inDataset: _NS("inDataset"),
   inDistribution: _NS("inDistribution"),
   hasIdentifier: _NS("hasIdentifier"),
-  identifier: _NS("identifier"),
+  value: _NS("value"),
 
 
   aggregates: _NS("aggregates"),

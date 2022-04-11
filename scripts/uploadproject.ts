@@ -166,7 +166,7 @@ async function autoAlignLbdAndGltf(ttlDataset: LbdDataset, glTFDataset: LbdDatas
 
     // const q1 = `SELECT ?identifier WHERE {
     //     ?reference <${LBDS.inDataset}> <${ttlDataset.url}> ;
-    //     <${LBDS.hasIdentifier}>/<http://schema.org/value> ?identifier .
+    //     <${LBDS.hasIdentifier}>/<https://w3id.org/lbdserver#value> ?identifier .
     // }`
     // const bindingsStream = await myEngine.query(q1, {sources: [referenceRegistryTtl], fetch: ttlProject.fetch})
     // bindingsStream.on('data', (binding) => {
@@ -181,7 +181,7 @@ async function autoAlignLbdAndGltf(ttlDataset: LbdDataset, glTFDataset: LbdDatas
     // const referenceRegistry = project.getReferenceRegistry() + 'data'
     // const q1 = `SELECT ?identifier WHERE {
     //     ?reference <${LBDS.inDataset}> <${ttlDataset}> ;
-    //     <${LBDS.hasIdentifier}>/<http://schema.org/value> ?identifier .
+    //     <${LBDS.hasIdentifier}>/<https://w3id.org/lbdserver#value> ?identifier .
     // }`
     // const results = await myEngine.query(q1, {sources: [referenceRegistry], fetch: project.fetch})
 

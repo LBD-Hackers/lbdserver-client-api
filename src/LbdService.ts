@@ -88,8 +88,8 @@ export class LbdService {
        ?s1 <${OWL.sameAs}> ?s2 .
        ?s2 <${OWL.sameAs}> ?s1 .
       } WHERE {
-          ?concept1 <${LBD.hasReference}>/<${LBD.hasIdentifier}>/<http://schema.org/value> ?s1 .
-          ?concept2 <${LBD.hasReference}>/<${LBD.hasIdentifier}>/<http://schema.org/value> ?s2 .
+          ?concept1 <${LBD.hasReference}>/<${LBD.hasIdentifier}>/<https://w3id.org/lbdserver#value> ?s1 .
+          ?concept2 <${LBD.hasReference}>/<${LBD.hasIdentifier}>/<https://w3id.org/lbdserver#value> ?s2 .
           ?concept1 <${OWL.sameAs}> ?concept2 .
       }`
       const quadStream = await myEngine.queryQuads(q, {
