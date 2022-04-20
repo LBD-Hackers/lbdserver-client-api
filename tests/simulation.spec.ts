@@ -2,7 +2,7 @@ import { Session } from "@inrupt/solid-client-authn-node";
 import * as path from "path";
 import { createReadStream, readFileSync } from "fs";
 import * as FileAPI from "file-api";
-import c from "../configuration";
+import c from "../configuration_duplex";
 import { AccessRights } from "../src/helpers/BaseDefinitions";
 import {
   getPublicAccess,
@@ -86,6 +86,7 @@ for (const [index, stakeholder] of configuration.stakeholders.entries()) {
 
   describe("Can create project", () => {
     test(`can create Project in LBD project registry of ${me}`, async () => {
+      jest.setTimeout(60000)
       const repo = await lbd.getProjectRegistry(me);
       project = new LbdProject(session, repo + projectId);
       await project.create(undefined, undefined, true);
@@ -227,6 +228,7 @@ for (const [index, stakeholder] of configuration.stakeholders.entries()) {
     });
 
     test(`can align concepts`, async () => {
+      jest.setTimeout(60000)
       for (const [i, item] of stakeholder.data.entries()) {
         if (item.align) {
           for (const key of Object.keys(item.align)) {
@@ -272,10 +274,10 @@ describe(`ongoing project tests`, () => {
   });
 
 
-  test('can get concept', async () => {
-    const theConcept = await project.getConcept("http://localhost:5000/office2/lbd/test/local/references/data#fc8f6a6c-b3a8-4679-af1c-91c6ad906e1d")
-    console.log('theConcept', theConcept)
-  })
+  // test('can get concept', async () => {
+  //   const theConcept = await project.getConcept("http://localhost:5000/office2/lbd/test/local/references/data#fc8f6a6c-b3a8-4679-af1c-91c6ad906e1d")
+  //   console.log('theConcept', theConcept)
+  // })
 
   // test("can query the project", async () => {
   //   const sources = []

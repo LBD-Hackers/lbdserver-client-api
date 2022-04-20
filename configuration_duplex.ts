@@ -7,9 +7,9 @@ const configuration = {
     {
       webId: "http://localhost:5000/office1/profile/card#me",
       credentials: {
-        "refreshToken" : "GCY0oGj0aQHLtejvvUrEJgWurDmhGICSph63IscbmIG",
-        "clientId"     : "rtQTA7SkEBu80vpkU_E51",
-        "clientSecret" : "siQFHretXRRcM8CMCS99Wko2MGtzHWNH3T-UNYX8onQ8IFahDyK1PNsdREw1s71cjA90OjotQyNb9hIkmVjVTg",
+        "refreshToken" : "FCsKS13-jgVuwJZdjUwNqMpBTbQuM2LHGUsaylVzToO",
+        "clientId"     : "1gviqyAGGzvThYwbqcwJt",
+        "clientSecret" : "2Udbx3G8AqrrN0vbgNbyElJuDT55Fst0lIJqrICeUVajwIXepBNyrd9HDFpzo_qppRrQcuMJvFj-Y3RgOrwgTQ",
         "oidcIssuer"   : "http://localhost:5000/",
       },
       data: [
@@ -57,9 +57,9 @@ const configuration = {
     {
       webId: "http://localhost:5000/office2/profile/card#me",
       credentials: {
-        "refreshToken" : "096O9hEg-1eNtepl592OBpol9zWL1YIfZxAf8bAcdjO",
-        "clientId"     : "45TsowT-QWAr09MMIp2vE",
-        "clientSecret" : "zgII_aY-osJ_5FnItzgiSvWr7XVo9jzYf2g8u0cty3_bzBNUeRFTiYwwaNXv5U31Aqf489xZCygyHmu_PI8haw",
+        "refreshToken" : "dK4_EkipDCA7PpqI0U4Cv5ZQfdDTe2Z8FwwSBiVHLrm",
+        "clientId"     : "931KnhPV3EQL4iTVr64c0",
+        "clientSecret" : "uCqcgjM4SEcGm9eJHeUqaXlSEBbSLqx4C67qL2kbwunzJC3sJSE1BRy05Ek55-3lhG9E9u_ty-7Z7BO7nnrCag",
         "oidcIssuer"   : "http://localhost:5000/",
       },
       data: [

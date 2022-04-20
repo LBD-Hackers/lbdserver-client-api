@@ -1,6 +1,4 @@
-import configuration from "../configuration_DC-chair";
-
-
+import configuration from "../configuration_Voorpost";
 
 import { Session } from "@inrupt/solid-client-authn-node";
 import { LbdDistribution, LbdProject, LbdService, LbdConcept, LbdDataset, LBDS } from "../src";
@@ -11,7 +9,6 @@ import {v4} from 'uuid'
 import {lbdReferences, subjectObjectReferences, glTFReferences} from './util/alignments'
 import { QueryEngine } from "@comunica/query-sparql";
 import { OWL } from "@inrupt/vocab-common-rdf";
-
 
 const projectId = configuration.projectId
 console.log("\n")
@@ -130,7 +127,6 @@ async function autoAlignLbdAndGltf(ttlDataset: LbdDataset, glTFDataset: LbdDatas
     let q_ttl = `INSERT DATA {`
     let q_gltf = `INSERT DATA {`
     for (const pair of tuples) {
-        console.log('pair', pair)
         const ttlConcept = await ttlProject.getConceptByIdentifier(pair.lbd, ttlDataset.url, undefined)
         const glTFConcept = await ttlProject.getConceptByIdentifier(pair.gltf, glTFDataset.url, undefined)
 

@@ -72,16 +72,16 @@ function streamToString (stream): Promise<string> {
 }
 
 async function query(q, options) {
-      let { sources, fetch, store, registries, asStream} = options
+      let { sources, fetch, store, registries, asStream, queryEngine} = options
       const {query, variables } = await mutateQuery(q)
 
       // const newQ = prefixes + "Select * where {?s1 owl:sameAs ?s2} "
-      const myEngine = new QueryEngine();
+      if (!queryEngine) queryEngine = new QueryEngine();
       // if (!store) store = new N3.Store();
       
       // await inference(myEngine, { registries, fetch, store })
-      const result = await myEngine.query(query, { sources: [...sources, ...registries], fetch })
-      const { data } = await myEngine.resultToString(result,
+      const result = await queryEngine.query(query, { sources: [...sources, ...registries], fetch })
+      const { data } = await queryEngine.resultToString(result,
           'application/sparql-results+json');
       if (asStream) {
           return data

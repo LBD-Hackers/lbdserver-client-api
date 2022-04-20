@@ -55,100 +55,100 @@ export class LbdService {
   ////////////////////// QUERY ////////////////////////////
   /////////////////////////////////////////////////////////
 
-  public async query(q: string, { sources, registries, asStream }) {
-    const { query } = this.mutateQuery(q)
+  // public async query(q: string, { sources, registries, asStream, queryEngine }) {
+  //   const { query } = this.mutateQuery(q)
 
-    const myEngine = new QueryEngine();
+  //   const myEngine = new QueryEngine();
 
-    await this.inference(myEngine, registries)
-    const context: any = { sources: [...sources, this.store], fetch }
-    const result = await myEngine.query(query, context)
-    const { data } = await myEngine.resultToString(result,
-      'application/sparql-results+json');
-    if (asStream) {
-      return data
-    } else {
-      return JSON.parse(await streamToString(data))
-    }
-  }
+  //   await this.inference(myEngine, registries)
+  //   const context: any = { sources: [...sources, this.store], fetch }
+  //   const result = await myEngine.query(query, context)
+  //   const { data } = await myEngine.resultToString(result,
+  //     'application/sparql-results+json');
+  //   if (asStream) {
+  //     return data
+  //   } else {
+  //     return JSON.parse(await streamToString(data))
+  //   }
+  // }
 
-  private findLowerLevel(obj, variables) {
-    if (!variables) variables = obj.variables
-    if (obj.type === "bgp") {
-      return { bgp: obj, variables }
-    } else {
-      return this.findLowerLevel(obj.input, variables)
-    }
-  }
+  // private findLowerLevel(obj, variables) {
+  //   if (!variables) variables = obj.variables
+  //   if (obj.type === "bgp") {
+  //     return { bgp: obj, variables }
+  //   } else {
+  //     return this.findLowerLevel(obj.input, variables)
+  //   }
+  // }
 
-  private inference(myEngine, registries): Promise<void> {
-    return new Promise(async (resolve, reject) => {
-      const q = `
-      CONSTRUCT {
-       ?s1 <${OWL.sameAs}> ?s2 .
-       ?s2 <${OWL.sameAs}> ?s1 .
-      } WHERE {
-          ?concept1 <${LBD.hasReference}>/<${LBD.hasIdentifier}>/<https://w3id.org/lbdserver#value> ?s1 .
-          ?concept2 <${LBD.hasReference}>/<${LBD.hasIdentifier}>/<https://w3id.org/lbdserver#value> ?s2 .
-          ?concept1 <${OWL.sameAs}> ?concept2 .
-      }`
-      const quadStream = await myEngine.queryQuads(q, {
-        sources: registries,
-        fetch
-      });
+  // private inference(myEngine, registries): Promise<void> {
+  //   return new Promise(async (resolve, reject) => {
+  //     const q = `
+  //     CONSTRUCT {
+  //      ?s1 <${OWL.sameAs}> ?s2 .
+  //      ?s2 <${OWL.sameAs}> ?s1 .
+  //     } WHERE {
+  //         ?concept1 <${LBD.hasReference}>/<${LBD.hasIdentifier}>/<https://w3id.org/lbdserver#value> ?s1 .
+  //         ?concept2 <${LBD.hasReference}>/<${LBD.hasIdentifier}>/<https://w3id.org/lbdserver#value> ?s2 .
+  //         ?concept1 <${OWL.sameAs}> ?concept2 .
+  //     }`
+  //     const quadStream = await myEngine.queryQuads(q, {
+  //       sources: registries,
+  //       fetch
+  //     });
 
-      quadStream.on('data', (res) => {
-        this.store.addQuad(quad(
-          namedNode(res.subject.id.replaceAll('"', '')),
-          namedNode(res.predicate.value),
-          namedNode(res.object.id.replaceAll('"', '')),
-          defaultGraph()
-        ))
-      });
+  //     quadStream.on('data', (res) => {
+  //       this.store.addQuad(quad(
+  //         namedNode(res.subject.id.replaceAll('"', '')),
+  //         namedNode(res.predicate.value),
+  //         namedNode(res.object.id.replaceAll('"', '')),
+  //         defaultGraph()
+  //       ))
+  //     });
 
-      quadStream.on('end', () => {
-        resolve()
-      })
-    })
-  }
+  //     quadStream.on('end', () => {
+  //       resolve()
+  //     })
+  //   })
+  // }
 
-  private mutateQuery(query) {
-    const translation = translate(query);
-    const { bgp, variables } = this.findLowerLevel(translation, translation.variables)
-    const usedVariables = new Set()
-    let aliasNumber = 1
-    let aliases = {}
-    for (const pattern of bgp.patterns) {
-      for (const item of Object.keys(pattern)) {
-        if (pattern[item].termType === "Variable") {
-          if (usedVariables.has(pattern[item])) {
-            const newVName = `${pattern[item].value}_alias${aliasNumber}`
-            if (!aliases[pattern[item].value]) aliases[pattern[item].value] = []
+  // private mutateQuery(query) {
+  //   const translation = translate(query);
+  //   const { bgp, variables } = this.findLowerLevel(translation, translation.variables)
+  //   const usedVariables = new Set()
+  //   let aliasNumber = 1
+  //   let aliases = {}
+  //   for (const pattern of bgp.patterns) {
+  //     for (const item of Object.keys(pattern)) {
+  //       if (pattern[item].termType === "Variable") {
+  //         if (usedVariables.has(pattern[item])) {
+  //           const newVName = `${pattern[item].value}_alias${aliasNumber}`
+  //           if (!aliases[pattern[item].value]) aliases[pattern[item].value] = []
 
-            aliases[pattern[item].value].push(newVName)
-            aliasNumber += 1
-            const newV = { termType: "Variable", value: newVName }
-            pattern[item] = newV
-          }
-          usedVariables.add(pattern[item])
-        }
+  //           aliases[pattern[item].value].push(newVName)
+  //           aliasNumber += 1
+  //           const newV = { termType: "Variable", value: newVName }
+  //           pattern[item] = newV
+  //         }
+  //         usedVariables.add(pattern[item])
+  //       }
 
-      }
-    }
-    Object.keys(aliases).forEach(item => {
-      aliases[item].forEach(alias => {
-        const newPattern = quad(
-          variable(item),
-          namedNode("http://www.w3.org/2002/07/owl#sameAs"),
-          variable(alias),
-          defaultGraph()
-        )
-        bgp.patterns.push(newPattern)
-      })
-    })
-    const q: any = { type: "project", input: { type: "bgp", patterns: bgp.patterns }, variables: Array.from(usedVariables) }
-    return { query: toSparql(q), variables: Array.from(usedVariables) }
-  }
+  //     }
+  //   }
+  //   Object.keys(aliases).forEach(item => {
+  //     aliases[item].forEach(alias => {
+  //       const newPattern = quad(
+  //         variable(item),
+  //         namedNode("http://www.w3.org/2002/07/owl#sameAs"),
+  //         variable(alias),
+  //         defaultGraph()
+  //       )
+  //       bgp.patterns.push(newPattern)
+  //     })
+  //   })
+  //   const q: any = { type: "project", input: { type: "bgp", patterns: bgp.patterns }, variables: Array.from(usedVariables) }
+  //   return { query: toSparql(q), variables: Array.from(usedVariables) }
+  // }
 
 
   /////////////////////////////////////////////////////////
@@ -190,15 +190,15 @@ export class LbdService {
    * @returns URL of project registry
    */
   public async getProjectRegistry(
-    stakeholder?: string
+    stakeholder?: string,
+    queryEngine: QueryEngine = new QueryEngine()
   ): Promise<string | undefined> {
     if (!stakeholder) { if (this.session.info.isLoggedIn) { stakeholder = this.session.info.webId } else { throw new Error('No WebID found') } }
-    const myEngine = newEngine();
     const q = `select ?loc where {<${stakeholder}> <${LBD.hasProjectRegistry}> ?loc}`;
-    const location = await myEngine
-      .query(q, { sources: [stakeholder], fetch: this.fetch })
-      .then((res: IQueryResultBindings) => res.bindings())
-      .then((bind: any) => bind.map((i) => i.get("?loc").value))
+    const location = await queryEngine
+      .queryBindings(q, { sources: [stakeholder], fetch: this.fetch })
+      .then((res) => res.toArray())
+      .then((bind: any) => bind.map((i) => i.get("loc").value))
       .catch((err: Error) => {
         throw err;
       });
@@ -214,13 +214,12 @@ export class LbdService {
    * @param stakeholder The WebID of the stakeholder from whom the LDP inbox should be retrieved
    * @returns The inbox URL
    */
-  public async getInbox(stakeholder: string): Promise<string | undefined> {
-    const myEngine = newEngine();
+  public async getInbox(stakeholder: string, queryEngine: QueryEngine = new QueryEngine()): Promise<string | undefined> {
     const q = `select ?inbox where {<${stakeholder}> <${LDP.inbox}> ?inbox}`;
-    const inbox = await myEngine
-      .query(q, { sources: [stakeholder], fetch: this.fetch })
-      .then((res: IQueryResultBindings) => res.bindings())
-      .then((bind: any) => bind.map((i) => i.get("?inbox").value))
+    const inbox = await queryEngine
+      .queryBindings(q, { sources: [stakeholder], fetch: this.fetch })
+      .then((res) => res.toArray())
+      .then((bind: any) => bind.map((i) => i.get("inbox").value))
       .catch((err: Error) => {
         throw err;
       });

@@ -192,12 +192,13 @@ export class LbdProject {
   /**
    * @description find all the partial projects from the indicated project access point
    */
-  public async findAllPartialProjects() {
+  public async findAllPartialProjects(queryEngine: QueryEngine = new QueryEngine()) {
     return await getQueryResult(
       this.accessPoint,
       LBD.aggregates,
       this.fetch,
-      false
+      false,
+      queryEngine
     );
   }
 
@@ -206,8 +207,8 @@ export class LbdProject {
    * @param webId The webID of the stakeholder whom's partial project you want to find
    * @returns The URL of the partial project
    */
-  public async findPartialProject(webId: string) {
-    const repo = await this.lbdService.getProjectRegistry(webId);
+  public async findPartialProject(webId: string, queryEngine = new QueryEngine()) {
+    const repo = await this.lbdService.getProjectRegistry(webId, queryEngine);
     // console.log('repo', repo)
     const partialProjectOfStakeholder = repo + this.projectId + "/local/";
     return partialProjectOfStakeholder
@@ -302,8 +303,11 @@ export class LbdProject {
     query: string;
     asStream: boolean;
     local: boolean;
+    queryEngine: QueryEngine
+    invalidateCache: boolean
   }) {
-    const myEngine = newEngine();
+    let queryEngine
+    (options && options.queryEngine) ? queryEngine = options.queryEngine : queryEngine = new QueryEngine()
     const subject = extract(this.data, this.localProject);
     const sources = [];
     if (options && options.local) {
@@ -315,7 +319,8 @@ export class LbdProject {
           p,
           LBD.hasDatasetRegistry,
           this.fetch,
-          true
+          true,
+          queryEngine
         );
         sources.push(dsReg);
       }
@@ -327,12 +332,14 @@ export class LbdProject {
       q = options.query;
     }
 
-    const results = await myEngine.query(q, { sources, fetch: this.fetch });
-    const { data } = await myEngine.resultToString(
+    const results = await queryEngine.query(q, { sources, fetch: this.fetch });
+    const { data } = await queryEngine.resultToString(
       results,
       "application/sparql-results+json"
     );
-    myEngine.invalidateHttpCache()
+    if (options && options.invalidateCache) {
+      queryEngine.invalidateHttpCache()
+    }
     if (options && options.asStream) {
       return data;
     } else {
@@ -367,12 +374,12 @@ export class LbdProject {
     return subject[LBD.hasDatasetRegistry][0]["@id"];
   }
 
-  private async getAllReferenceRegistries() {
-    const partials = await this.findAllPartialProjects()
+  private async getAllReferenceRegistries(queryEngine: QueryEngine = new QueryEngine()) {
+    const partials = await this.findAllPartialProjects(queryEngine)
     const registries = []
 
     for (const partial of partials) {
-      const reg = await getQueryResult(partial, LBD.hasReferenceRegistry, this.fetch, true)
+      const reg = await getQueryResult(partial, LBD.hasReferenceRegistry, this.fetch, true, queryEngine)
       registries.push(reg + "data")
     }
 
@@ -402,7 +409,7 @@ export class LbdProject {
     identifier: string,
     dataset: string,
     distribution?: string,
-    options?: {queryEngine: QueryEngine}
+    options?: {queryEngine?: QueryEngine, invalidateCache?: boolean}
   ) {
     let myEngine
     if (options && options.queryEngine) {
@@ -438,10 +445,14 @@ export class LbdProject {
 
     const results = await myEngine.queryBindings(q, { sources, fetch: this.fetch })
       .then(r => r.toArray())
-    myEngine.invalidateHttpCache()
+      if (options && options.invalidateCache) {
+        myEngine.invalidateHttpCache()
+      }
       if (results.length > 0 ) {
         const raw = results[0].get('concept').value
-        const theConcept = await this.getConcept(raw)
+        let invalidateCache
+        if (options && options.invalidateCache) invalidateCache = options.invalidateCache
+        const theConcept = await this.getConcept(raw, {queryEngine: myEngine, invalidateCache})
         return theConcept
       } else {
         return undefined
@@ -570,7 +581,7 @@ export class LbdProject {
 
   public async getConcept(
     url,
-    options?: {queryEngine: QueryEngine}
+    options?: {queryEngine?: QueryEngine, invalidateCache?: boolean}
   ) {
     let myEngine
     if (options && options.queryEngine) {
@@ -627,7 +638,7 @@ export class LbdProject {
 
     const theConcept = new LbdConcept(this.session, conceptRegistry)
     theConcept.init(concept)
-    myEngine.invalidateHttpCache()
+    if (options && options.invalidateCache) myEngine.invalidateHttpCache()
     return theConcept
   }
 
@@ -642,9 +653,11 @@ export class LbdProject {
    * @param asStream Whether to be consumed as a stream or not (default: false)
    * @returns 
    */
-  public async directQuery(q: string, sources: string[], options?: {asStream: boolean}) {
+  public async directQuery(q: string, sources: string[], options?: {asStream?: boolean, queryEngine: QueryEngine}) {
     const registries = await this.getAllReferenceRegistries()
-    const results = await query(q, {sources, fetch: this.fetch, registries, ...options})
+    let queryEngine
+    (options && options.queryEngine) ? queryEngine = options.queryEngine : queryEngine = new QueryEngine()
+    const results = await query(q, {sources, fetch: this.fetch, registries, ...options, queryEngine})
     return results
   }
 
