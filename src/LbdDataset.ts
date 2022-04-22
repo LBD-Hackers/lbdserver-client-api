@@ -62,7 +62,8 @@ export class LbdDataset {
     makePublic?: boolean,
   ) {
     const datasetUrl = this.url
-    const datasetId = this.url.split('/')[this.url.split("/").length - 2]
+    const datasetArr = this.url.split('/')
+    const datasetId = datasetArr[datasetArr.length - 2]
     const status = await this.fetch(datasetUrl, {method: "HEAD"}).then(res => res.status)
     if (status !== 200) {
       await this.dataService.createContainer(datasetUrl, makePublic)
@@ -82,6 +83,14 @@ export class LbdDataset {
     let q = `INSERT DATA {<${datasetUrl}> a <${DCAT.Dataset}> ; <${DCTERMS.creator}> <${this.session.info.webId}> ; <${DCTERMS.identifier}> "${datasetId}". }`
 
     await this.dataService.sparqlUpdate(datasetUrl, q)
+
+    datasetArr.pop()
+    datasetArr.pop()
+    const datasetRegistry = datasetArr.join("/") + "/"
+    let q0 = `INSERT DATA {<${datasetRegistry}> <${DCAT.dataset}> <${datasetUrl}> . }`
+
+    await this.dataService.sparqlUpdate(datasetRegistry, q0)
+
     
     if (Object.keys(options).length > 0) {
       let q0 = `INSERT DATA { `

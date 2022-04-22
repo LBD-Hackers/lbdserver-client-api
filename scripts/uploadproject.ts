@@ -1,4 +1,4 @@
-import configuration from "../configuration_Voorpost";
+import configuration from "../configuration_duplex";
 
 import { Session } from "@inrupt/solid-client-authn-node";
 import { LbdDistribution, LbdProject, LbdService, LbdConcept, LbdDataset, LBDS } from "../src";
@@ -55,6 +55,7 @@ async function initialize(credentials) {
             }
         }
 
+        
         return myProject
 }
 

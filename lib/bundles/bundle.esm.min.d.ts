@@ -179,14 +179,6 @@ declare class LbdService {
      * @param verbose optional parameter for logging purposes
      */
     constructor(session: Session | Session$1, verbose?: boolean);
-    query(q: string, { sources, registries, asStream }: {
-        sources: any;
-        registries: any;
-        asStream: any;
-    }): Promise<any>;
-    private findLowerLevel;
-    private inference;
-    private mutateQuery;
     /**
      * @description This function checks if the card (webId) contains a lbds:hasProjectRegistry pointer
      * @param webId the webId/card to check
@@ -204,13 +196,13 @@ declare class LbdService {
      * @param stakeholder The WebID of the stakeholder from whom the project registry should be retrieved
      * @returns URL of project registry
      */
-    getProjectRegistry(stakeholder?: string): Promise<string | undefined>;
+    getProjectRegistry(stakeholder?: string, queryEngine?: QueryEngine): Promise<string | undefined>;
     /**
      * @description This function retrieves the LDP inbox from a particular WebID
      * @param stakeholder The WebID of the stakeholder from whom the LDP inbox should be retrieved
      * @returns The inbox URL
      */
-    getInbox(stakeholder: string): Promise<string | undefined>;
+    getInbox(stakeholder: string, queryEngine?: QueryEngine): Promise<string | undefined>;
     /**
      * @description Create an LBDserver project registry
      * @param url Where the project registry should be created
@@ -413,6 +405,17 @@ declare class LbdProject {
      */
     create(existingPartialProjects?: string[], options?: object, makePublic?: boolean): Promise<void>;
     /**
+     *
+     * @param satelliteURL The url (endpoint) of the satellite
+     * @param conformsTo The standard to which the query part of the satellite conforms
+     * @returns
+     */
+    addSatellite(satelliteURL: string, conformsTo: string): Promise<string>;
+    getSatellites(conformsTo: string, options?: {
+        queryEngine?: QueryEngine;
+        partialProjects?: string[];
+    }): Promise<{}>;
+    /**
      * @description Add a partial project to a Pod-specific access point
      * @param part Partial project to add to a Pod-specific access point
      */
@@ -430,13 +433,13 @@ declare class LbdProject {
     /**
      * @description find all the partial projects from the indicated project access point
      */
-    findAllPartialProjects(): Promise<any>;
+    findAllPartialProjects(queryEngine?: QueryEngine): Promise<any>;
     /**
      * @description Find the partial project provided by this stakeholder
      * @param webId The webID of the stakeholder whom's partial project you want to find
      * @returns The URL of the partial project
      */
-    findPartialProject(webId: string): Promise<string>;
+    findPartialProject(webId: string, queryEngine?: QueryEngine): Promise<string>;
     /**
      * @description Add this stakeholder's partial project corresponding with this project (same GUID)
      * @param webId The webID of the stakeholder whom's partial project you want to add
@@ -471,6 +474,8 @@ declare class LbdProject {
         query: string;
         asStream: boolean;
         local: boolean;
+        queryEngine: QueryEngine;
+        invalidateCache: boolean;
     }): Promise<any>;
     /**
      * @description Add a concept to the local project registry
@@ -493,7 +498,8 @@ declare class LbdProject {
      * @returns
      */
     getConceptByIdentifier(identifier: string, dataset: string, distribution?: string, options?: {
-        queryEngine: QueryEngine;
+        queryEngine?: QueryEngine;
+        invalidateCache?: boolean;
     }): Promise<LbdConcept>;
     /**
    * @description Find the main concept by one of its representations: an identifier and a dataset
@@ -505,8 +511,10 @@ declare class LbdProject {
     getConceptByIdentifierOld(identifier: string, dataset: string, distribution?: string, options?: {
         queryEngine: QueryEngine;
     }): Promise<LbdConcept>;
-    getConcept(url: any, options?: {
-        queryEngine: QueryEngine;
+    getConcept(url: string, options?: {
+        queryEngine?: QueryEngine;
+        invalidateCache?: boolean;
+        sources?: string[];
     }): Promise<LbdConcept>;
     /**
      * @description a direct query on project resources
@@ -516,7 +524,8 @@ declare class LbdProject {
      * @returns
      */
     directQuery(q: string, sources: string[], options?: {
-        asStream: boolean;
+        asStream?: boolean;
+        queryEngine: QueryEngine;
     }): Promise<any>;
 }
 
@@ -530,6 +539,7 @@ declare const LBDS: {
     NS: typeof _NS;
     Aggregator: string;
     Project: string;
+    PartialProject: string;
     Concept: string;
     StringBasedIdentifier: string;
     URIBasedIdentifier: string;

@@ -8,6 +8,7 @@ declare const LBDS: {
     NS: typeof _NS;
     Aggregator: string;
     Project: string;
+    PartialProject: string;
     Concept: string;
     StringBasedIdentifier: string;
     URIBasedIdentifier: string;

@@ -10,7 +10,8 @@ async function determineLBDpropsLevel(source, session) {
   prefix dcat: <http://www.w3.org/ns/dcat#>
   prefix schema: <http://schema.org/> 
   prefix props: <https://w3id.org/props#>
-
+  prefix opm: <https://w3id.org/opm#> 
+  
   select ?element ?thing
   where 
   { ?element props:globalIdIfcRoot_attribute_simple ?thing .
@@ -45,7 +46,29 @@ async function determineLBDpropsLevel(source, session) {
     if (bindings.length > 0) {
       return 2;
     } else {
-      throw Error("could not determine props level");
+      q = `
+      prefix ldp: <http://www.w3.org/ns/ldp#>
+      prefix dcat: <http://www.w3.org/ns/dcat#>
+      prefix schema: <http://schema.org/> 
+      prefix props: <https://w3id.org/props#>
+    
+      select ?element ?thing
+      where 
+      { ?element props:globalIdIfcRoot ?thing . ?thing opm:hasPropertyState ?ps . ?ps schema:value ?id
+      } LIMIT 1`;
+  
+      results = await myEngine.queryBindings(q, {
+        sources: [source],
+        fetch: session.fetch,
+      })
+      
+      bindings = await results.toArray();
+
+      if (bindings.length > 0) {
+        return 3;
+      } else {
+        throw Error("could not determine props level");
+      }
     }
   } else {
     return 1;

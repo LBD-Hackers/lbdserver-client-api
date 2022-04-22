@@ -2,7 +2,7 @@ import { Session } from "@inrupt/solid-client-authn-node";
 import * as path from "path";
 import { createReadStream, readFileSync } from "fs";
 import * as FileAPI from "file-api";
-import c from "../configuration_duplex";
+import c from "../configuration_duplex_centralPod";
 import { AccessRights } from "../src/helpers/BaseDefinitions";
 import {
   getPublicAccess,
@@ -85,6 +85,8 @@ for (const [index, stakeholder] of configuration.stakeholders.entries()) {
   });
 
   describe("Can create project", () => {
+    jest.setTimeout(600000)
+
     test(`can create Project in LBD project registry of ${me}`, async () => {
       jest.setTimeout(60000)
       const repo = await lbd.getProjectRegistry(me);
@@ -234,8 +236,7 @@ for (const [index, stakeholder] of configuration.stakeholders.entries()) {
           for (const key of Object.keys(item.align)) {
                 // find the concept locally
                 const concept = await project.getConceptByIdentifier(item.align[key].identifiers[0], uploadedDatasets[item.path].dataset, uploadedDatasets[item.path].distribution)
-                console.log('item.path', item.path)
-                console.log('concept.references', concept.references)
+
                 
                 for (const alias of uploadedConcepts[key]) {
                   if (!concept.aliases.includes(alias)) {
@@ -272,6 +273,16 @@ describe(`ongoing project tests`, () => {
     await project.init()
     expect(project.data).not.toBe(undefined)
   });
+
+  test("can register sparql satellite", async() => {
+    const sat = await project.addSatellite("http://localhost:5002/ds/sparql", "sparql")
+    expect (sat).not.toBe(undefined)
+  })
+
+  test("can find sparql satellite", async() => {
+    const sat = await project.getSatellites("sparql")
+    expect (sat).not.toBe(undefined)
+  })
 
 
   // test('can get concept', async () => {

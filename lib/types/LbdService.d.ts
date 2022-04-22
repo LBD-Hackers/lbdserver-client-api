@@ -2,6 +2,7 @@ import AccessService from "./helpers/access-service";
 import DataService from "./helpers/data-service";
 import { Session as BrowserSession } from "@inrupt/solid-client-authn-browser";
 import { Session as NodeSession } from "@inrupt/solid-client-authn-node";
+import { QueryEngine } from "@comunica/query-sparql";
 export declare class LbdService {
     fetch: any;
     verbose: boolean;
@@ -15,14 +16,6 @@ export declare class LbdService {
      * @param verbose optional parameter for logging purposes
      */
     constructor(session: BrowserSession | NodeSession, verbose?: boolean);
-    query(q: string, { sources, registries, asStream }: {
-        sources: any;
-        registries: any;
-        asStream: any;
-    }): Promise<any>;
-    private findLowerLevel;
-    private inference;
-    private mutateQuery;
     /**
      * @description This function checks if the card (webId) contains a lbds:hasProjectRegistry pointer
      * @param webId the webId/card to check
@@ -40,13 +33,13 @@ export declare class LbdService {
      * @param stakeholder The WebID of the stakeholder from whom the project registry should be retrieved
      * @returns URL of project registry
      */
-    getProjectRegistry(stakeholder?: string): Promise<string | undefined>;
+    getProjectRegistry(stakeholder?: string, queryEngine?: QueryEngine): Promise<string | undefined>;
     /**
      * @description This function retrieves the LDP inbox from a particular WebID
      * @param stakeholder The WebID of the stakeholder from whom the LDP inbox should be retrieved
      * @returns The inbox URL
      */
-    getInbox(stakeholder: string): Promise<string | undefined>;
+    getInbox(stakeholder: string, queryEngine?: QueryEngine): Promise<string | undefined>;
     /**
      * @description Create an LBDserver project registry
      * @param url Where the project registry should be created

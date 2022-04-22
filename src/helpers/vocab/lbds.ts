@@ -13,6 +13,7 @@ const LBDS = {
 
   Aggregator: _NS("Aggregator"),
   Project: _NS("Project"), // add to ontology
+  PartialProject: _NS("PartialProject"), // add to ontology
   Concept: _NS("Concept"),
   StringBasedIdentifier: _NS("StringBasedIdentifier"),
   URIBasedIdentifier: _NS("URIBasedIdentifier"),

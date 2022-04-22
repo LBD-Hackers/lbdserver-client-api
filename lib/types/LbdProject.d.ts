@@ -40,6 +40,17 @@ export declare class LbdProject {
      */
     create(existingPartialProjects?: string[], options?: object, makePublic?: boolean): Promise<void>;
     /**
+     *
+     * @param satelliteURL The url (endpoint) of the satellite
+     * @param conformsTo The standard to which the query part of the satellite conforms
+     * @returns
+     */
+    addSatellite(satelliteURL: string, conformsTo: string): Promise<string>;
+    getSatellites(conformsTo: string, options?: {
+        queryEngine?: QueryEngine;
+        partialProjects?: string[];
+    }): Promise<{}>;
+    /**
      * @description Add a partial project to a Pod-specific access point
      * @param part Partial project to add to a Pod-specific access point
      */
@@ -57,13 +68,13 @@ export declare class LbdProject {
     /**
      * @description find all the partial projects from the indicated project access point
      */
-    findAllPartialProjects(): Promise<any>;
+    findAllPartialProjects(queryEngine?: QueryEngine): Promise<any>;
     /**
      * @description Find the partial project provided by this stakeholder
      * @param webId The webID of the stakeholder whom's partial project you want to find
      * @returns The URL of the partial project
      */
-    findPartialProject(webId: string): Promise<string>;
+    findPartialProject(webId: string, queryEngine?: QueryEngine): Promise<string>;
     /**
      * @description Add this stakeholder's partial project corresponding with this project (same GUID)
      * @param webId The webID of the stakeholder whom's partial project you want to add
@@ -98,6 +109,8 @@ export declare class LbdProject {
         query: string;
         asStream: boolean;
         local: boolean;
+        queryEngine: QueryEngine;
+        invalidateCache: boolean;
     }): Promise<any>;
     /**
      * @description Add a concept to the local project registry
@@ -120,7 +133,8 @@ export declare class LbdProject {
      * @returns
      */
     getConceptByIdentifier(identifier: string, dataset: string, distribution?: string, options?: {
-        queryEngine: QueryEngine;
+        queryEngine?: QueryEngine;
+        invalidateCache?: boolean;
     }): Promise<LbdConcept>;
     /**
    * @description Find the main concept by one of its representations: an identifier and a dataset
@@ -132,8 +146,10 @@ export declare class LbdProject {
     getConceptByIdentifierOld(identifier: string, dataset: string, distribution?: string, options?: {
         queryEngine: QueryEngine;
     }): Promise<LbdConcept>;
-    getConcept(url: any, options?: {
-        queryEngine: QueryEngine;
+    getConcept(url: string, options?: {
+        queryEngine?: QueryEngine;
+        invalidateCache?: boolean;
+        sources?: string[];
     }): Promise<LbdConcept>;
     /**
      * @description a direct query on project resources
@@ -143,7 +159,8 @@ export declare class LbdProject {
      * @returns
      */
     directQuery(q: string, sources: string[], options?: {
-        asStream: boolean;
+        asStream?: boolean;
+        queryEngine: QueryEngine;
     }): Promise<any>;
 }
 //# sourceMappingURL=LbdProject.d.ts.map

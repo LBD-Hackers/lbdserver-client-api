@@ -1,8 +1,8 @@
 import { v4 } from "uuid";
 import { RDFS } from "@inrupt/vocab-common-rdf";
 const configuration = {
-  // projectId: v4(),
-  projectId: 'duplex',
+  projectId: v4(),
+  // projectId: 'duplex',
   stakeholders: [
     {
       webId: "http://localhost:5000/office1/profile/card#me",

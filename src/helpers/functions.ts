@@ -137,4 +137,5 @@ async function mutateQuery(query) {
   return {query: toSparql(q), variables: Array.from(usedVariables)}
 }
 
+
 export { extract, streamToString, query };
