@@ -14,11 +14,6 @@ import { DCTERMS, LDP, RDF, RDFS, VOID } from "@inrupt/vocab-common-rdf";
 import fs from "fs";
 import mime from "mime-types";
 import LBD from "../src/helpers/vocab/lbds";
-import {
-  IQueryResultBindings,
-  IQueryResultBoolean,
-  newEngine,
-} from "@comunica/actor-init-sparql";
 import { extract } from "../src/helpers/functions";
 import {LbdConcept, LbdProject, LbdService, LbdDataset, LbdDistribution} from '../src/index'
 

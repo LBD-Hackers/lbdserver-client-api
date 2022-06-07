@@ -1,16 +1,17 @@
 import { v4 } from "uuid";
 import { RDFS } from "@inrupt/vocab-common-rdf";
 const configuration = {
-  // projectId: v4(),
-  projectId: 'duplex',
+  projectId: v4(),
+  // projectId: 'duplex',
   stakeholders: [
     {
-      webId: "http://localhost:5000/office2/profile/card#me",
+      webId: "http://localhost:1000/profile/card#me",
+      satellite: "http://localhost:1002/",
       credentials: {
-        "refreshToken" : "JuXvD1_8L83pQv5s3UefUk2Yhs7wtw4dikrukVyX2k0",
-        "clientId"     : "7ZX-6K-yA4suUw9Z8A_Gr",
-        "clientSecret" : "x-_Mm32fIQS3m-P11t50LGqDF0WRP4T8pdMU2z4H1_37d12QHs1xtPtfh4qIunfw-O33SOHPjexseXNKUvLmzQ",
-        "oidcIssuer"   : "http://localhost:5000/"
+        "refreshToken" : "cTaluCDV21XEshobHXROrJATthPB534ZRdKMrFNZEK_",
+        "clientId"     : "DZr9HMyLLFwWCYL9sKBYY",
+        "clientSecret" : "vN22NpcmjquhaXcLhoKN6wIUFEOIzYetw4vUvpBCRV_UQB9p3yJRjsyBpcsv4BGLtn108JXAmOwE4M77B_8TbQ",
+        "oidcIssuer"   : "http://localhost:1000/"
       },
       data: [
         {
@@ -27,18 +28,6 @@ const configuration = {
               identifiers: ["2O2Fr$t4X7Zf8NOew3FLKI"],
             },
           },
-        },
-        {
-          path: "./tests/artifacts/damages.ttl",
-          metadata: {
-            [RDFS.label]: "damage",
-            [RDFS.comment]: "These are documented damage descriptions"
-          },
-          extract: "subject-object",
-          contentType: "text/turtle",
-          align: {
-            "0ac53fb9-babd-4a7c-a2fa-c8cd698d70ff": {identifiers: ["http://localhost:5000/office1/damages#wall123"]}
-          }
         },
         {
           path: "./tests/artifacts/duplex.ttl",

@@ -2,9 +2,8 @@
 import AccessService from "./helpers/access-service";
 import DataService from "./helpers/data-service";
 import { LbdService } from "./LbdService";
-import { Session as BrowserSession } from "@inrupt/solid-client-authn-browser";
-import { Session as NodeSession } from "@inrupt/solid-client-authn-node";
 import { LbdDataset } from "./LbdDataset";
+import { QueryEngine } from "@comunica/query-sparql";
 export declare class LbdDistribution {
     fetch: any;
     accessService: AccessService;
@@ -13,14 +12,15 @@ export declare class LbdDistribution {
     url: string;
     data: any;
     dataset: LbdDataset;
-    session: BrowserSession | NodeSession;
+    contentType: string;
+    session: any;
     /**
      *
      * @param session an (authenticated) Solid session
      * @param dataset the LbdDataset to which this distribution belongs
      * @param id (optional) identifier of the distribution (default: GUID)
      */
-    constructor(session: BrowserSession | NodeSession, dataset: any, id?: string);
+    constructor(session: any, dataset: any, id?: string);
     /**
      * Check the existence of this distribution
      */
@@ -34,7 +34,7 @@ export declare class LbdDistribution {
      * @description Get the content type of the distribution
      * @returns contenttype of the distribution
      */
-    getContentType(): any;
+    getContentType(queryEngine?: QueryEngine): Promise<string>;
     /**
      * @description Update the metadata of the distribution (i.e. its dataset) with a SPARQL query
      * @param query the SPARQL update

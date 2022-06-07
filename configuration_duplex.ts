@@ -1,15 +1,15 @@
 import { v4 } from "uuid";
 import { RDFS } from "@inrupt/vocab-common-rdf";
 const configuration = {
-  projectId: v4(),
-  // projectId: 'duplex',
+  // projectId: v4(),
+  projectId: 'duplex',
   stakeholders: [
     {
       webId: "http://localhost:5000/office1/profile/card#me",
       credentials: {
-        "refreshToken" : "FCsKS13-jgVuwJZdjUwNqMpBTbQuM2LHGUsaylVzToO",
-        "clientId"     : "1gviqyAGGzvThYwbqcwJt",
-        "clientSecret" : "2Udbx3G8AqrrN0vbgNbyElJuDT55Fst0lIJqrICeUVajwIXepBNyrd9HDFpzo_qppRrQcuMJvFj-Y3RgOrwgTQ",
+        "refreshToken" : "OKTvYemP1m__pgTCb_NV09KdJR3ptY8GhtqCG9wFnba",
+        "clientId"     : "VqyXCx2TAsOlFLTidm4MQ",
+        "clientSecret" : "DnifxAOacmOQQtjuN2E6PLse6uPn6lXA9ysHCcBZvxmXG9rMVCOPLb7CNrZEaQhgOEODmM7FmuwIhIxX5xHH-Q",
         "oidcIssuer"   : "http://localhost:5000/",
       },
       data: [

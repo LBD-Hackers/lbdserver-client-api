@@ -11,19 +11,14 @@ import { v4 } from 'uuid'
 import { lbdReferences, subjectObjectReferences, glTFReferences } from './util/alignments'
 import { QueryEngine } from "@comunica/query-sparql";
 import { OWL, RDFS } from "@inrupt/vocab-common-rdf";
+import generateSession from "./util/generateSession";
 
 const modelPath = "C:/Users/Administrator/Desktop/blender/CAAD/geometry/"
 const graphPath = "C:/Users/Administrator/Documents/code/LBDserver-tools/lbdserver-client-api/tests/artifacts/chairCAAD.ttl"
 const projectId = "caadchair"
 const myEngine = new QueryEngine()
 
-const credentials = {
-    "refreshToken" : "YCk7qiF0EZhIbuuClZHDryHw4OUytQuAs0QjqvstSor",
-    "clientId"     : "YENAhQ2yLwMBszTj5ZU8P",
-    "clientSecret" : "qguqTatbY2O88vprKMokASd2yGTltkJO6K9et42T_0My_WwD9xYnxR0YiYFPYni7T6z8tDb5mwAcOO1esCXUOg",
-    "oidcIssuer"   : "http://localhost:5000/",
-  }
-const session = new Session()
+let session
 
 
 console.log("\n")
@@ -31,7 +26,19 @@ console.log('Creating project with ID: ', projectId)
 console.log("\n")
 
 async function run() {
-    await session.login(credentials)
+
+const stakeholder = {
+    webId: "https://pod.werbrouck.me/dc/profile/card#me",
+    satelliteURL: "https://fuseki.werbrouck.me/dc/",
+    options: {
+      name: "dc_token",
+      email: "dc@example.org",
+      password: "test123",
+      idp: "https://pod.werbrouck.me",
+      clientCredentialsTokenStorageLocation: "C:/Users/Administrator/Documents/code/LBDserver-tools/node-api-test/credentials/dc.json"
+    }
+}
+    const session = await generateSession(stakeholder.options, stakeholder.webId)
 
     // check if Pod can be used for LBDserver projects
     const myService = new LbdService(session)
@@ -54,20 +61,21 @@ async function run() {
     }
 
     await project.create(undefined, undefined, true)
+    await project.addSatellite(stakeholder.satelliteURL, "sparql")
     const ttl = await createGraph(graphPath, project)
     const gltfList = await createSeparateDatasets(project)
     await align(gltfList, ttl, project)
 }
 
-async function align(gltfList, mainTtl, project) {
-    const propsLevel = await determineLBDpropsLevel(mainTtl.distribution.url, mainTtl.distribution.session)
-
+async function align(gltfList, mainTtl, project: LbdProject) {
+    const session = mainTtl.distribution.session
+    const propsLevel = await determineLBDpropsLevel(mainTtl.distribution.url, session)
     for (const item of gltfList) {
-        const concept = new LbdConcept(session, project.getReferenceRegistry())
-        await concept.create()
+        const concept = await project.addConcept()
         let identifier = item.identifier
         
         await concept.addReference(item.identifier, item.dataset.url, item.distribution.url)
+        console.log(`added ${item.identifier} to concept with id ${concept.aliases[0]}`)
 
         let q
         if (propsLevel === 1) {
@@ -99,6 +107,7 @@ async function align(gltfList, mainTtl, project) {
 
         for (const result of results)  {
             await concept.addReference(result, mainTtl.dataset.url, mainTtl.distribution.url)
+            console.log(`added ${result} to concept with id ${concept.aliases[0]}`)
         }
     }
 }

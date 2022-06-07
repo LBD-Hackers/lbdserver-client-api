@@ -1,11 +1,10 @@
-import configuration from "../configuration_duplex";
-
+import configuration from "../configuration_iGent";
+import generateSession from "./util/generateSession";
 import { Session } from "@inrupt/solid-client-authn-node";
 import { LbdDistribution, LbdProject, LbdService, LbdConcept, LbdDataset, LBDS } from "../src";
 import * as fs from 'fs'
 import { determineLBDpropsLevel } from "./util/functions";
 import * as path from 'path'
-import {v4} from 'uuid'
 import {lbdReferences, subjectObjectReferences, glTFReferences} from './util/alignments'
 import { QueryEngine } from "@comunica/query-sparql";
 import { OWL } from "@inrupt/vocab-common-rdf";
@@ -15,10 +14,10 @@ console.log("\n")
 console.log('Creating project with ID: ', projectId)
 console.log("\n")
 
-async function initialize(credentials) {
+async function initialize(stakeholder) {
         // log in
-        const session = new Session()
-        await session.login(credentials)
+        const credentials = stakeholder.options
+        const session: any = await generateSession(credentials, stakeholder.webId)
 
         // check if Pod can be used for LBDserver projects
         const myService = new LbdService(session)
@@ -55,7 +54,14 @@ async function initialize(credentials) {
             }
         }
 
-        
+        // const options = {
+        //     method: "POST",
+        //     body: JSON.stringify({repository: projectId}),
+        //     headers: { 'content-type': 'application/json' }
+        // }
+
+        // await session.fetch(stakeholder.satellite, options)
+        // await myProject.addSatellite(stakeholder.satellite + projectId, "sparql")
         return myProject
 }
 
@@ -79,7 +85,6 @@ async function createIdentifiers(distribution: LbdDistribution, project: LbdProj
 }
 
 async function findTuples(mainTtlDist: LbdDistribution) {
-
     const myEngine = new QueryEngine()
 
     // quick and dirty
@@ -107,94 +112,73 @@ async function findTuples(mainTtlDist: LbdDistribution) {
 }
 
 async function autoAlignLbdAndGltf(ttlDataset: LbdDataset, glTFDataset: LbdDataset) {
+
+    const queryEngine = new QueryEngine()
     // initialize the project where the ttlDistribution resides
     const ttlSplit = ttlDataset.url.split("/")
-    ttlSplit.length = 6
+    ttlSplit.length = ttlSplit.length - 4
     const ttlProjectAccessPoint = ttlSplit.join("/") + "/"
     const ttlProject = new LbdProject(ttlDataset.session, ttlProjectAccessPoint)
     await ttlProject.init()
-    const mainTtlDist = ttlDataset.getDistributions()[0]
+    const mainTtlDist: LbdDistribution[] = await ttlDataset.getDistributions()
+    const mainGltfDist: LbdDistribution[] = await glTFDataset.getDistributions()
     const referenceRegistryTtl = ttlProject.getReferenceRegistry() + 'data'    
 
     // initialize the project where the glTFDistribution resides
     const gltfSplit = glTFDataset.url.split("/")
-    gltfSplit.length = 6
+    gltfSplit.length = gltfSplit.length - 4
     const glTfProjectAccessPoint = gltfSplit.join("/") + "/"
     const glTFProject = new LbdProject(glTFDataset.session, glTfProjectAccessPoint)
     await glTFProject.init()
     const referenceRegistryGlTF = glTFProject.getReferenceRegistry() + 'data'
-
-    const tuples = await findTuples(mainTtlDist)
-    let q_ttl = `INSERT DATA {`
-    let q_gltf = `INSERT DATA {`
+    const tuples = await findTuples(mainTtlDist[0])
+    let update = `INSERT DATA {`
     for (const pair of tuples) {
-        const ttlConcept = await ttlProject.getConceptByIdentifier(pair.lbd, ttlDataset.url, undefined)
-        const glTFConcept = await ttlProject.getConceptByIdentifier(pair.gltf, glTFDataset.url, undefined)
+        const lbd: string = pair.lbd
+        const gltf: string = pair.gltf
 
+
+        // const q = `INSERT {
+        //     ?gltf <${OWL.sameAs}> ?ttl .
+        //     ?ttl <${OWL.sameAs}> ?gltf .
+        // } WHERE {
+        //     ?gltf <${LBDS.hasReference}>/<${LBDS.hasIdentifier}>/<${LBDS.value}> "${gltf}" .
+        //     ?ttl <${LBDS.hasReference}>/<${LBDS.hasIdentifier}>/<${LBDS.value}> <${lbd}> .
+        // }`
+
+        // for (const value of sources ) {
+        //     await queryEngine.queryVoid(q, {
+        //         sources, 
+        //         fetch: ttlDataset.fetch,
+        //         destination: { type: 'patchSparqlUpdate', value },
+        //     })
+        // }
+
+        const query = `SELECT ?gltf ?ttl WHERE {
+            ?gltf <${LBDS.hasReference}>/<${LBDS.hasIdentifier}>/<${LBDS.value}> "${gltf}" .
+            ?ttl <${LBDS.hasReference}>/<${LBDS.hasIdentifier}>/<${LBDS.value}> <${lbd}> .
+        } LIMIT 1`
+
+        const results = await queryEngine.queryBindings(query, {sources: [referenceRegistryGlTF, referenceRegistryTtl]})
+            .then(i => i.toArray())
+            .then(i => i.map(item => {return {ttlConcept: item.get('ttl').value, gltfConcept: item.get('gltf').value}}))
+
+            console.log('results', results)
         // let q
         // if (referenceRegistryGlTF === referenceRegistryTtl) { // lbd and gltf resources are in the same Pod
 
         // } else { // lbd and gltf resources are not in the same Pod
-
-            // bulk alias adding
-            if (ttlConcept && glTFConcept) {
-                for (const ttlAlias of ttlConcept.aliases) {
-                    for (const gltfAlias of glTFConcept.aliases) {
-                        q_ttl += `<${ttlAlias}> <${OWL.sameAs}> <${gltfAlias}> . \n`
-                        q_gltf += `<${gltfAlias}> <${OWL.sameAs}> <${ttlAlias}> . \n`
-                    }
-                }
-            }
-
-            // for (const al of lbdConcept.aliases) {
-            //     glTFConcept.addAlias(al)
-            // }
-            
-        // }
-        // find concept in lbdReferenceRegistry
-        // find concept in 
+        if (results.length > 0) {
+            const result = results[0]
+            const addition = `<${result.ttlConcept}> <${OWL.sameAs}> <${result.gltfConcept}> . <${result.gltfConcept}> <${OWL.sameAs}> <${result.ttlConcept}> . \n`
+            update += addition
+        }
     }
-    q_ttl += `}`
-    q_gltf += `}`
-    await ttlProject.dataService.sparqlUpdate(referenceRegistryTtl, q_ttl)
-    await glTFProject.dataService.sparqlUpdate(referenceRegistryGlTF, q_gltf)
+    update += `}`
+
+    await ttlProject.dataService.sparqlUpdate(referenceRegistryTtl, update)
+    await glTFProject.dataService.sparqlUpdate(referenceRegistryGlTF, update)
     console.log('done')
-    // cleanup if in same registry?
-
-    // const q1 = `SELECT ?identifier WHERE {
-    //     ?reference <${LBDS.inDataset}> <${ttlDataset.url}> ;
-    //     <${LBDS.hasIdentifier}>/<https://w3id.org/lbdserver#value> ?identifier .
-    // }`
-    // const bindingsStream = await myEngine.query(q1, {sources: [referenceRegistryTtl], fetch: ttlProject.fetch})
-    // bindingsStream.on('data', (binding) => {
-    //     const id = binding.get('identifier').value
-
-    //     // an identifier has been found in the reference registry
-    //     const 
-    // });
-
-
-    // const myEngine = new QueryEngine()
-    // const referenceRegistry = project.getReferenceRegistry() + 'data'
-    // const q1 = `SELECT ?identifier WHERE {
-    //     ?reference <${LBDS.inDataset}> <${ttlDataset}> ;
-    //     <${LBDS.hasIdentifier}>/<https://w3id.org/lbdserver#value> ?identifier .
-    // }`
-    // const results = await myEngine.query(q1, {sources: [referenceRegistry], fetch: project.fetch})
-
-    // const ttlProject = ttl
-
-    // const projects = distributions.map(item => {
-    //     const split = item.split("/")
-    //     split.length = 6
-    //     return split.join("/") + "/"
-    // }
-
-    // find referenced elements in lbd project distribution
-
-    // for each referenced element, find its original IFC id => this is the main align function: separate here
-
-    // once the ID tuplets have been found, find their concept by identifier and add the other one as an alias
 }
 
 const distributions = []
@@ -205,7 +189,7 @@ async function run() {
 
     // initialize all the partial projects
     for (const stakeholder of configuration.stakeholders) {
-        const partial = await initialize(stakeholder.credentials)
+        const partial = await initialize(stakeholder)
         partialProjects.push({partial, stakeholder})
     }
 

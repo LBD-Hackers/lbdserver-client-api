@@ -1,7 +1,6 @@
 import AccessService from "./helpers/access-service";
 import DataService from "./helpers/data-service";
 import { computeChecksumMd5 } from "./helpers/utils";
-import { newEngine, IQueryResultBindings } from "@comunica/actor-init-sparql";
 // Import from "@inrupt/solid-client"
 import {
   createSolidDataset,
@@ -33,7 +32,7 @@ export class LbdService {
   public verbose: boolean = false;
   public accessService: AccessService;
   public dataService: DataService;
-  private session: BrowserSession | NodeSession;
+  private session: any;
   private store: Store
 
 
@@ -42,13 +41,17 @@ export class LbdService {
    * @param session an (authenticated) session
    * @param verbose optional parameter for logging purposes
    */
-  constructor(session: BrowserSession | NodeSession, verbose: boolean = false) {
+  constructor(session: any, verbose: boolean = false) {
     this.session = session;
     this.fetch = session.fetch;
     this.verbose = verbose;
     this.accessService = new AccessService(session.fetch);
     this.dataService = new DataService(session.fetch);
     this.store = new Store()
+  }
+
+  public async initialiseSatellite(endpoint, repository) {
+    
   }
 
   /////////////////////////////////////////////////////////
@@ -174,15 +177,64 @@ export class LbdService {
    * @param aggregator an LBDS aggregator, aggregating projects with lbds:aggregates
    * @returns Array of LBDserver project access points (URL).
    */
-  public async getAllProjects(aggregator) {
-    const data = await this.fetch(aggregator, {
-      headers: { Accept: "application/ld+json" },
-    }).then((t) => t.json());
-    const myProjects = extract(data, aggregator)[LDP.contains].map(
-      (i) => i["@id"]
-    );
+  public async getAllProjects(aggregator: string) {
+    let myProjects
+
+    // shortcut for Pod-based aggregators with aggregation level 1
+    if (aggregator.includes("/lbd/")) {
+      const data = await this.fetch(aggregator, {
+        headers: { Accept: "application/ld+json" },
+      }).then((t) => t.json());
+      myProjects = extract(data, aggregator)[LDP.contains].map(
+        (i) => i["@id"]
+      );
+    } else {
+      myProjects = await this.constructTree(aggregator)
+
+    }
     return myProjects;
   }
+
+  // construct the resources in the Pod in a recursive way
+ public async constructTree(
+  root: string,
+  queryEngine = new QueryEngine(),
+  recursiveArray = [],
+  alreadyFetched = [],
+  notExists = []
+) {
+  const resources = await this.getLDPContent([root], queryEngine);
+  for (const res of resources) {
+    recursiveArray.push(res);
+    if (res.endsWith("/")) {
+      if (!alreadyFetched.includes(res)) {
+        const status = await this.fetch(res, {method: "HEAD"}).then(i => i.status)
+        alreadyFetched.push(res)
+        if (status === 200) {
+          recursiveArray = await this.constructTree(res, queryEngine, recursiveArray, alreadyFetched, notExists);
+        } else {
+          notExists.push(res)
+        }
+      }
+    }
+  }
+  const d = recursiveArray.filter(i => !notExists.includes(i))
+  return d
+}
+
+// get the content (ldp:contains) of an ldp:Container instance
+ private async getLDPContent(sources, queryEngine= new QueryEngine()) {
+
+  const q = `SELECT ?child ?parent WHERE {
+      ?parent <${DCAT.dataset}> ?child .
+      FILTER (!CONTAINS(str(?child), "local"))
+    }`;
+  const results = await queryEngine
+    .queryBindings(q, { sources, fetch })
+    .then((b) => b.toArray());
+
+  return results.map((i) => i.get("child").value);
+}
 
   /**
    * @description Find the LBDserver project registry of a specific stakeholder by their WebID.

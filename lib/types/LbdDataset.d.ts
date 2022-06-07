@@ -3,8 +3,7 @@ import AccessService from "./helpers/access-service";
 import DataService from "./helpers/data-service";
 import { LbdService } from "./LbdService";
 import { LbdDistribution } from './LbdDistribution';
-import { Session as BrowserSession } from "@inrupt/solid-client-authn-browser";
-import { Session as NodeSession } from "@inrupt/solid-client-authn-node";
+import { QueryEngine } from "@comunica/query-sparql";
 export declare class LbdDataset {
     fetch: any;
     accessService: AccessService;
@@ -14,17 +13,13 @@ export declare class LbdDataset {
     url: string;
     distributions: LbdDistribution[];
     data: object[];
-    session: BrowserSession | NodeSession;
-    constructor(session: BrowserSession | NodeSession, url: string);
+    session: any;
+    constructor(session: any, url: string);
     /**
      *
      * @returns boolean: this dataset exists or not
      */
     checkExistence(): Promise<boolean>;
-    /**
-     * @description Draw this dataset into your application (async)
-     */
-    init(): Promise<void>;
     /**
      * @description create this dataset within the active project
      * @param options Optional - Object containing metadata about the dataset to be created. e.g: {[RDFS.label]: "theLabel"}
@@ -55,6 +50,6 @@ export declare class LbdDataset {
      * @description get an Array of distribution URLs of this dataset
      * @returns an Array of distribution URLs
      */
-    getDistributions(): any[];
+    getDistributions(queryEngine?: QueryEngine): Promise<LbdDistribution[]>;
 }
 //# sourceMappingURL=LbdDataset.d.ts.map

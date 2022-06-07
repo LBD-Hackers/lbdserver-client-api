@@ -1,8 +1,6 @@
 /// <reference types="node" />
 import * as _inrupt_solid_client from '@inrupt/solid-client';
 import * as _inrupt_solid_client_dist_interfaces from '@inrupt/solid-client/dist/interfaces';
-import { Session } from '@inrupt/solid-client-authn-browser';
-import { Session as Session$1 } from '@inrupt/solid-client-authn-node';
 import { QueryEngine } from '@comunica/query-sparql';
 
 declare class AccessRights {
@@ -178,7 +176,8 @@ declare class LbdService {
      * @param session an (authenticated) session
      * @param verbose optional parameter for logging purposes
      */
-    constructor(session: Session | Session$1, verbose?: boolean);
+    constructor(session: any, verbose?: boolean);
+    initialiseSatellite(endpoint: any, repository: any): Promise<void>;
     /**
      * @description This function checks if the card (webId) contains a lbds:hasProjectRegistry pointer
      * @param webId the webId/card to check
@@ -190,7 +189,9 @@ declare class LbdService {
      * @param aggregator an LBDS aggregator, aggregating projects with lbds:aggregates
      * @returns Array of LBDserver project access points (URL).
      */
-    getAllProjects(aggregator: any): Promise<any>;
+    getAllProjects(aggregator: string): Promise<any>;
+    constructTree(root: string, queryEngine?: QueryEngine, recursiveArray?: any[], alreadyFetched?: any[], notExists?: any[]): Promise<any[]>;
+    private getLDPContent;
     /**
      * @description Find the LBDserver project registry of a specific stakeholder by their WebID.
      * @param stakeholder The WebID of the stakeholder from whom the project registry should be retrieved
@@ -227,7 +228,7 @@ declare class LbdConcept {
     aliases: string[];
     registry: string;
     initialized: boolean;
-    constructor(session: Session | Session$1, registry: string);
+    constructor(session: any, registry: string);
     /**
      * create this concept on a project (in a Pod) - asynchronous
      */
@@ -273,14 +274,15 @@ declare class LbdDistribution {
     url: string;
     data: any;
     dataset: LbdDataset;
-    session: Session | Session$1;
+    contentType: string;
+    session: any;
     /**
      *
      * @param session an (authenticated) Solid session
      * @param dataset the LbdDataset to which this distribution belongs
      * @param id (optional) identifier of the distribution (default: GUID)
      */
-    constructor(session: Session | Session$1, dataset: any, id?: string);
+    constructor(session: any, dataset: any, id?: string);
     /**
      * Check the existence of this distribution
      */
@@ -294,7 +296,7 @@ declare class LbdDistribution {
      * @description Get the content type of the distribution
      * @returns contenttype of the distribution
      */
-    getContentType(): any;
+    getContentType(queryEngine?: QueryEngine): Promise<string>;
     /**
      * @description Update the metadata of the distribution (i.e. its dataset) with a SPARQL query
      * @param query the SPARQL update
@@ -328,17 +330,13 @@ declare class LbdDataset {
     url: string;
     distributions: LbdDistribution[];
     data: object[];
-    session: Session | Session$1;
-    constructor(session: Session | Session$1, url: string);
+    session: any;
+    constructor(session: any, url: string);
     /**
      *
      * @returns boolean: this dataset exists or not
      */
     checkExistence(): Promise<boolean>;
-    /**
-     * @description Draw this dataset into your application (async)
-     */
-    init(): Promise<void>;
     /**
      * @description create this dataset within the active project
      * @param options Optional - Object containing metadata about the dataset to be created. e.g: {[RDFS.label]: "theLabel"}
@@ -369,7 +367,7 @@ declare class LbdDataset {
      * @description get an Array of distribution URLs of this dataset
      * @returns an Array of distribution URLs
      */
-    getDistributions(): any[];
+    getDistributions(queryEngine?: QueryEngine): Promise<LbdDistribution[]>;
 }
 
 declare class LbdProject {
@@ -380,14 +378,14 @@ declare class LbdProject {
     projectId: string;
     accessPoint: string;
     data: object[];
-    session: Session | Session$1;
+    session: any;
     localProject: string;
     /**
      *
      * @param session an (authenticated) Solid session
      * @param accessPoint The main accesspoint of the project. This is an aggregator containing the different partial projects of the LBDserver instance
      */
-    constructor(session: Session | Session$1, accessPoint: string);
+    constructor(session: any, accessPoint: string);
     /**
      * @description Checks whether a project with this access point already exists
      * @returns Boolean: true = the project exists / false = the project doesn't exist
@@ -404,6 +402,8 @@ declare class LbdProject {
      * @param makePublic access rights: true = public; false = only the creator
      */
     create(existingPartialProjects?: string[], options?: object, makePublic?: boolean): Promise<void>;
+    getRdfEndpoints(queryEngine?: QueryEngine): Promise<string[]>;
+    getDatasetsByContentType(contentTypes: string[], queryEngine?: QueryEngine): Promise<object[]>;
     /**
      *
      * @param satelliteURL The url (endpoint) of the satellite
@@ -433,13 +433,13 @@ declare class LbdProject {
     /**
      * @description find all the partial projects from the indicated project access point
      */
-    findAllPartialProjects(queryEngine?: QueryEngine): Promise<any>;
+    getAllPartialProjects(queryEngine?: QueryEngine): Promise<any>;
     /**
      * @description Find the partial project provided by this stakeholder
      * @param webId The webID of the stakeholder whom's partial project you want to find
      * @returns The URL of the partial project
      */
-    findPartialProject(webId: string, queryEngine?: QueryEngine): Promise<string>;
+    getPartialProject(webId: string, queryEngine?: QueryEngine): Promise<string>;
     /**
      * @description Add this stakeholder's partial project corresponding with this project (same GUID)
      * @param webId The webID of the stakeholder whom's partial project you want to add
@@ -471,11 +471,11 @@ declare class LbdProject {
      * @returns
      */
     getAllDatasetUrls(options?: {
-        query: string;
-        asStream: boolean;
-        local: boolean;
-        queryEngine: QueryEngine;
-        invalidateCache: boolean;
+        query?: string;
+        asStream?: boolean;
+        local?: boolean;
+        queryEngine?: QueryEngine;
+        invalidateCache?: boolean;
     }): Promise<any>;
     /**
      * @description Add a concept to the local project registry
@@ -484,7 +484,7 @@ declare class LbdProject {
     addConcept(id?: any): Promise<LbdConcept>;
     getReferenceRegistry(): any;
     getDatasetRegistry(): any;
-    private getAllReferenceRegistries;
+    getAllReferenceRegistries(queryEngine?: QueryEngine): Promise<string[]>;
     /**
      * @description delete a concept by ID
      * @param url the URL of the concept to be deleted
@@ -501,21 +501,18 @@ declare class LbdProject {
         queryEngine?: QueryEngine;
         invalidateCache?: boolean;
     }): Promise<LbdConcept>;
-    /**
-   * @description Find the main concept by one of its representations: an identifier and a dataset
-   * @param identifier the Identifier of the representation
-   * @param dataset the dataset where the representation resides
-   * @param distribution (optional) the distribution of the representation
-   * @returns
-   */
-    getConceptByIdentifierOld(identifier: string, dataset: string, distribution?: string, options?: {
-        queryEngine: QueryEngine;
-    }): Promise<LbdConcept>;
     getConcept(url: string, options?: {
         queryEngine?: QueryEngine;
         invalidateCache?: boolean;
         sources?: string[];
     }): Promise<LbdConcept>;
+    getConceptsByIdentifier(identifiers: {
+        identifier: string;
+        dataset?: string;
+        distribution?: string;
+    }[], options?: {
+        queryEngine?: QueryEngine;
+    }): Promise<any[]>;
     /**
      * @description a direct query on project resources
      * @param q The SPARQL query (string)
@@ -523,9 +520,13 @@ declare class LbdProject {
      * @param asStream Whether to be consumed as a stream or not (default: false)
      * @returns
      */
-    directQuery(q: string, sources: string[], options?: {
+    directQuery(q: string, sources: any, options?: {
         asStream?: boolean;
-        queryEngine: QueryEngine;
+        queryEngine?: QueryEngine;
+    }): Promise<any>;
+    queryAll(q: string, options?: {
+        asStream?: boolean;
+        queryEngine?: QueryEngine;
     }): Promise<any>;
 }
 

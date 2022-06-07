@@ -10,6 +10,7 @@ import { ACL, DCAT, DCTERMS, FOAF, RDFS } from "@inrupt/vocab-common-rdf";
 import {LbdDistribution} from './LbdDistribution'
 import { Session as BrowserSession } from "@inrupt/solid-client-authn-browser";
 import { Session as NodeSession} from "@inrupt/solid-client-authn-node";
+import { QueryEngine } from "@comunica/query-sparql";
 
 export class LbdDataset {
   public fetch;
@@ -20,9 +21,9 @@ export class LbdDataset {
   public url: string;
   public distributions: LbdDistribution[]
   public data: object[];
-  public session: BrowserSession | NodeSession
+  public session: any
 
-  constructor(session: BrowserSession | NodeSession, url: string) {
+  constructor(session: any, url: string) {
     this.session = session
     this.fetch = session.fetch;
     this.url = url
@@ -42,14 +43,6 @@ export class LbdDataset {
     } else {
       return false
     }
-  }
-
-  /**
-   * @description Draw this dataset into your application (async)
-   */
-  public async init() {
-    this.data = await this.fetch(this.url, {headers: {"Accept": "application/ld+json"}}).then(i => i.json())
-    this.distributions = this.getDistributions()
   }
 
   /**
@@ -118,7 +111,6 @@ export class LbdDataset {
       q0 += "}"
       await this.dataService.sparqlUpdate(datasetUrl, q0)
     }
-    await this.init()
   }
 
   /**
@@ -160,18 +152,25 @@ export class LbdDataset {
    * @description get an Array of distribution URLs of this dataset
    * @returns an Array of distribution URLs
    */
-  public getDistributions() {
-      const dataset = extract(this.data, this.url)
-      if (dataset[DCAT.distribution]) {
-        const distributionUrls = dataset[DCAT.distribution].map(i => i["@id"])
-        const distributions = []
-        for (const url of distributionUrls) {
-          const id = url.split('/')[url.split('/').length -1]
-          const dist = new LbdDistribution(this.session, this, id)
-          distributions.push(dist)
-        }
-        return distributions
-      } else return []
+  public async getDistributions(queryEngine = new QueryEngine()) {
+      if (this.distributions) {
+        return this.distributions
+      }
+      else {
+        const q = `select ?dist where {?ds <${DCAT.distribution}> ?dist}`
+        const res: LbdDistribution[] = await queryEngine.queryBindings(q, {sources: [this.url], fetch: this.fetch})
+        .then(i => i.toArray())
+        .then(i => {
+          return i.map(item => {
+            const url = item.get('dist').value
+            const id = url.split('/')[url.split('/').length - 1]
+            const dist = new LbdDistribution(this.session, this, id)
+            return dist
+          })
+        })
+        this.distributions = res
+        return res
+      }      
   }
 
 }

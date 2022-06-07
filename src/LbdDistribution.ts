@@ -1,6 +1,5 @@
 import AccessService from "./helpers/access-service";
 import DataService from "./helpers/data-service";
-import { newEngine, IQueryResultBindings, ActorInitSparql } from "@comunica/actor-init-sparql";
 
 import LBD from "./helpers/vocab/lbds";
 import { AccessRights, ResourceType } from "./helpers/BaseDefinitions";
@@ -12,6 +11,7 @@ import mime from "mime-types"
 import { Session as BrowserSession } from "@inrupt/solid-client-authn-browser";
 import { Session as NodeSession} from "@inrupt/solid-client-authn-node";
 import {LbdDataset} from "./LbdDataset";
+import { QueryEngine } from "@comunica/query-sparql";
 
 export class LbdDistribution {
   public fetch;
@@ -22,8 +22,8 @@ export class LbdDistribution {
   public data: any;
 
   public dataset: LbdDataset
-
-  public session:  BrowserSession | NodeSession
+  public contentType: string
+  public session:  any
 
   /**
    * 
@@ -31,7 +31,7 @@ export class LbdDistribution {
    * @param dataset the LbdDataset to which this distribution belongs
    * @param id (optional) identifier of the distribution (default: GUID)
    */
-  constructor(session: BrowserSession | NodeSession, dataset, id: string = v4()) {
+  constructor(session: any, dataset, id: string = v4()) {
     this.dataset = dataset
     this.session = session
     this.fetch = session.fetch;
@@ -66,10 +66,25 @@ export class LbdDistribution {
    * @description Get the content type of the distribution
    * @returns contenttype of the distribution
    */
-  public getContentType() {
-    const metadata = extract(this.dataset.data, this.url)[DCAT.mediaType].map(i => i["@id"])[0]
-    return metadata
-
+  public async getContentType(queryEngine = new QueryEngine()) {
+    if (this.contentType) return this.contentType
+    else {
+      const q = `select ?ct where {<${this.url}> <${DCAT.mediaType}> ?ct}`
+      const res: string[] = await queryEngine.queryBindings(q, {sources: [this.url], fetch: this.fetch})
+      .then(i => i.toArray())
+      .then(i => {
+        return i.map(item => {
+          const ct = item.get('ct').value
+          return ct
+        })
+      })
+      if (res.length > 0) {
+        this.contentType = res[0]
+        return this.contentType
+      } else {
+        return
+      }
+    }   
   } 
 
 
@@ -134,14 +149,13 @@ export class LbdDistribution {
         await this.dataService.sparqlUpdate(this.dataset.url, q0)
       }
 
-    await this.dataset.init()
   }
 
   /**
    * Delete this distribution
    */
   public async delete() {
-    const myEngine = newEngine()
+    const myEngine = new QueryEngine()
     await this.dataService.deleteFile(this.url)
     // also update dataset
     const q0 = `DELETE {

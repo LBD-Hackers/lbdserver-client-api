@@ -1,4 +1,4 @@
-const QueryEngine = require('@comunica/query-sparql').QueryEngine;
+import {QueryEngine} from '@comunica/query-sparql'
 const N3 = require('n3');
 const { DataFactory } = N3;
 const { namedNode, literal, defaultGraph, quad, variable } = DataFactory;
@@ -65,24 +65,37 @@ function inference(myEngine, { registries, fetch, store }): Promise<void> {
 function streamToString (stream): Promise<string> {
   const chunks = [];
   return new Promise((resolve, reject) => {
-    stream.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
-    stream.on('error', (err) => reject(err));
-    stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
+    stream.on('data', (chunk) => {
+      chunks.push(Buffer.from(chunk))
+      return
+    });
+    stream.on('error', (err) => {
+      console.log('error', err);
+      reject(err)
+    });
+    stream.on('end', () => {
+      console.log('end')
+      if (chunks.length > 0) {resolve(Buffer.concat(chunks).toString('utf8'))}
+      else {
+        reject("could not find length")
+      }
+    });
   })
+
 }
 
 async function query(q, options) {
-      let { sources, fetch, store, registries, asStream, queryEngine} = options
+      let { sources, fetch, store, asStream} = options
       const {query, variables } = await mutateQuery(q)
-
+      console.log('query', query)
       // const newQ = prefixes + "Select * where {?s1 owl:sameAs ?s2} "
-      if (!queryEngine) queryEngine = new QueryEngine();
+      let queryEngine = new QueryEngine();
       // if (!store) store = new N3.Store();
       
       // await inference(myEngine, { registries, fetch, store })
-      const result = await queryEngine.query(query, { sources: [...sources, ...registries], fetch })
-      const { data } = await queryEngine.resultToString(result,
-          'application/sparql-results+json');
+      const s: any = [...sources]
+      const result = await queryEngine.query(query, { sources: s , fetch })
+      const { data } = await queryEngine.resultToString(result);
       if (asStream) {
           return data
       } else {

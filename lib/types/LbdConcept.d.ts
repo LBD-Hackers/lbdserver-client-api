@@ -1,7 +1,5 @@
 import AccessService from "./helpers/access-service";
 import DataService from "./helpers/data-service";
-import { Session as BrowserSession } from "@inrupt/solid-client-authn-browser";
-import { Session as NodeSession } from "@inrupt/solid-client-authn-node";
 export declare class LbdConcept {
     fetch: any;
     accessService: AccessService;
@@ -11,7 +9,7 @@ export declare class LbdConcept {
     aliases: string[];
     registry: string;
     initialized: boolean;
-    constructor(session: BrowserSession | NodeSession, registry: string);
+    constructor(session: any, registry: string);
     /**
      * create this concept on a project (in a Pod) - asynchronous
      */

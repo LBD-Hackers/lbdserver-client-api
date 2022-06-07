@@ -17,13 +17,13 @@ export class LbdConcept {
   public fetch;
   public accessService: AccessService;
   public dataService: DataService;
-  private session: BrowserSession | NodeSession
+  private session: any
   public references: object[]
   public aliases: string[]
   public registry: string
   public initialized: boolean
 
-  constructor(session: BrowserSession | NodeSession, registry: string) {
+  constructor(session: any, registry: string) {
     this.aliases = []
     this.session = session
     this.fetch = session.fetch;
@@ -139,7 +139,7 @@ export class LbdConcept {
       if (!this.initialized) throw new Error("Please initialize the Concept first using this.initialize() or this.create()")
       const registry = this.registry
       const referenceId = v4()
-      const regdist = registry + "data"
+      const regdist = registry
       const referenceUrl = regdist + "#" + referenceId
       const identifierId = v4()
       const identifierUrl = regdist + "#" + identifierId
@@ -180,6 +180,7 @@ export class LbdConcept {
          await this.dataService.sparqlUpdate(regdist, q0)
         }
       }
+      
       this.references.push({
         dataset,
         distribution,

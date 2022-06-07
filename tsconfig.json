@@ -26,6 +26,9 @@
     "resolveJsonModule": true,
     "moduleResolution": "node",
     "outDir": "lib/types",
+    "lib": [
+      "ES2021.String"
+    ]
   },
   "include": [
     "./src/index.ts"
